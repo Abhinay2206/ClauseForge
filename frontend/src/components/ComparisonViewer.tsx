@@ -1,6 +1,7 @@
 import type { ComparisonResult } from '@/types';
 import { cn } from '@/utils/helpers';
 import { ShieldAlert, CheckCircle2, MinusCircle, FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ComparisonViewerProps {
     comparison: ComparisonResult;
@@ -40,11 +41,26 @@ export default function ComparisonViewer({ comparison }: ComparisonViewerProps) 
             <div className="cf-card p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h3 className="text-[15px] font-bold text-[#0F172A] flex items-center gap-2">
+                        <h3 className="text-[15px] font-bold text-[#0F172A] flex items-center gap-2 mb-2">
                             Semantic Comparison
                             <span className="cf-badge bg-blue-50 text-blue-600 border border-blue-200">AI Powered</span>
                         </h3>
-                        <p className="text-[13px] text-[#64748B] mt-1">{comparison.summary}</p>
+                        <div className="text-[13px] text-[#475569] leading-relaxed markdown-body">
+                            <ReactMarkdown
+                                components={{
+                                    h1: ({node, ...props}) => <h1 className="text-sm font-bold text-gray-900 mt-4 mb-2" {...props} />,
+                                    h2: ({node, ...props}) => <h2 className="text-sm font-semibold text-gray-800 mt-3 mb-2" {...props} />,
+                                    h3: ({node, ...props}) => <h3 className="text-xs font-semibold text-gray-800 mt-2 mb-1" {...props} />,
+                                    p: ({node, ...props}) => <p className="mb-3" {...props} />,
+                                    ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+                                    ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                                    li: ({node, ...props}) => <li className="text-gray-700" {...props} />,
+                                    strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
+                                }}
+                            >
+                                {comparison.summary}
+                            </ReactMarkdown>
+                        </div>
                     </div>
                     <div className="flex items-center gap-6 sm:border-l sm:border-[#E2E8F0] sm:pl-6">
                         <div className="text-center">

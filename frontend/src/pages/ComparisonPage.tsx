@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GitCompareArrows, X, Plus, Upload, ArrowLeftRight, FileType2, FileText, History, Clock } from 'lucide-react';
+import { GitCompareArrows, X, Plus, Upload, ArrowLeftRight, FileType2, FileText, History, Clock, Trash2 } from 'lucide-react';
 import ComparisonViewer from '@/components/ComparisonViewer';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
-import { compareDocuments, getDocuments, getComparisonHistory, getComparisonById, uploadDocument } from '@/services/documentService';
+import { compareDocuments, getDocuments, getComparisonHistory, getComparisonById, uploadDocument, deleteComparison } from '@/services/documentService';
 import { cn } from '@/utils/helpers';
 import type { ComparisonResult, Document, ComparisonHistoryItem } from '@/types';
 
@@ -271,6 +271,17 @@ export default function ComparisonPage() {
         setIsLoading(false);
     };
 
+    const handleDeleteHistory = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this comparison?')) return;
+        try {
+            await deleteComparison(id);
+            setHistoryList(prev => prev.filter(item => item._id !== id));
+        } catch (error) {
+            console.error('Failed to delete comparison', error);
+            alert('Failed to delete comparison.');
+        }
+    };
+
     const handleUploadSlot = async (file: File, isSlotA: boolean) => {
         setIsLoading(true);
         try {
@@ -350,12 +361,21 @@ export default function ComparisonPage() {
                                             <p className="text-[13px] text-slate-600 mt-2 line-clamp-1">{item.summary}</p>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => handleLoadHistory(item._id)}
-                                        className="cf-btn cf-btn-outline cf-btn-sm shrink-0 whitespace-nowrap"
-                                    >
-                                        View
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleLoadHistory(item._id)}
+                                            className="cf-btn cf-btn-outline cf-btn-sm shrink-0 whitespace-nowrap"
+                                        >
+                                            View
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteHistory(item._id)}
+                                            className="cf-btn cf-btn-ghost cf-btn-sm text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2]"
+                                            title="Delete comparison"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

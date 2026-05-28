@@ -224,7 +224,21 @@ const compareDocuments = async (req, res) => {
 
       comparisonResult.changes = changesCount;
       comparisonResult.similarity = totalLines > 0 ? Math.max(0, 100 - Math.round((changesCount / totalLines) * 100)) : 100;
-      comparisonResult.summary = "Standard text comparison performed because AI clause analysis was skipped.";
+      
+      let diffTextForAi = '';
+      diff.forEach(part => {
+        if (part.added) diffTextForAi += `+ ${part.value}\n`;
+        else if (part.removed) diffTextForAi += `- ${part.value}\n`;
+      });
+      
+      try {
+        const { summarizeTextDiffAI } = require('../services/aiService');
+        const aiSummaryRes = await summarizeTextDiffAI(diffTextForAi);
+        comparisonResult.summary = aiSummaryRes.summary;
+      } catch (err) {
+        console.error("AI Text diff summary failed", err);
+        comparisonResult.summary = "Standard text comparison performed because AI clause analysis was skipped.";
+      }
     } else {
       // Normal AI clause comparison
 
@@ -690,6 +704,30 @@ const triggerAnalysis = async (req, res) => {
   }
 };
 
+// @desc    Delete comparison
+// @route   DELETE /api/documents/comparisons/:id
+// @access  Private
+const deleteComparison = async (req, res) => {
+  try {
+    const comparison = await Comparison.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id
+    });
+    
+    if (!comparison) {
+      return res.status(404).json({ message: 'Comparison not found' });
+    }
+    
+    // Invalidate cache and log audit
+    await invalidateCache(req.user._id);
+    await logAudit(req.user._id, 'comparison_delete', 'Comparison', req, { comparisonId: req.params.id });
+    
+    res.json({ message: 'Comparison removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUploadUrl,
   registerDocument,
@@ -705,6 +743,7 @@ module.exports = {
   deleteDocument,
   getComparisons,
   getComparisonById,
+  deleteComparison,
   getNegotiatedText,
   triggerAnalysis
 };

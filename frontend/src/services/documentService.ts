@@ -127,6 +127,15 @@ export async function getComparisonById(id: string): Promise<ComparisonResult> {
     }
 }
 
+export async function deleteComparison(id: string): Promise<void> {
+    try {
+        await api.delete(`/api/documents/comparisons/${id}`);
+    } catch (error) {
+        console.error('Failed to delete comparison:', error);
+        throw error;
+    }
+}
+
 export async function explainClause(text: string, type: string, riskLevel: string): Promise<string> {
     try {
         const { data } = await api.post('/api/documents/explain-clause', {

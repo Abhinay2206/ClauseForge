@@ -89,6 +89,31 @@ const compareDocumentsAI = async (clausesA, clausesB) => {
 module.exports.compareDocumentsAI = compareDocumentsAI;
 
 /**
+ * Call the FastAPI AI microservice to summarize standard text diff.
+ * 
+ * @param {string} diffText - Raw text diff string
+ * @returns {Object} Comparison text summary from FastAPI
+ */
+const summarizeTextDiffAI = async (diffText) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/compare_text`, {
+      diff_text: diffText,
+    }, {
+      timeout: 120000,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`AI text comparison failed: ${error.response.data.detail || error.response.statusText}`);
+    }
+    throw error;
+  }
+};
+
+module.exports.summarizeTextDiffAI = summarizeTextDiffAI;
+
+/**
  * Call the FastAPI AI microservice to explain a specific clause.
  * 
  * @param {string} text - Clause text

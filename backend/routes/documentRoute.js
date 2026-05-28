@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUploadUrl, registerDocument, getDocuments, getDocumentAnalysis, compareDocuments, explainClause, downloadDocumentReport, getDocumentReport, negotiateDocument, documentActionItems, getAllActionItems, deleteDocument, getComparisons, getComparisonById, getNegotiatedText, triggerAnalysis } = require('../controllers/documentController');
+const { getUploadUrl, registerDocument, getDocuments, getDocumentAnalysis, compareDocuments, explainClause, downloadDocumentReport, getDocumentReport, negotiateDocument, documentActionItems, getAllActionItems, deleteDocument, getComparisons, getComparisonById, deleteComparison, getNegotiatedText, triggerAnalysis } = require('../controllers/documentController');
 const { protect } = require('../middleware/auth');
 const { cache } = require('../middleware/cache');
 
@@ -12,6 +12,7 @@ router.post('/:id/analyze', protect, triggerAnalysis);
 router.get('/:id/analysis', protect, cache(600), getDocumentAnalysis);
 router.get('/comparisons', protect, getComparisons);
 router.get('/comparisons/:id', protect, getComparisonById);
+router.delete('/comparisons/:id', protect, deleteComparison);
 router.get('/compare/:idA/:idB', protect, compareDocuments);
 router.post('/explain-clause', protect, explainClause);
 router.post('/:id/report', protect, downloadDocumentReport);

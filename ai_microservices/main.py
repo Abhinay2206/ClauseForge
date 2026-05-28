@@ -14,8 +14,8 @@ from sse_starlette.sse import EventSourceResponse
 from config import settings
 from models_loader import load_models, get_clause_classifier, get_risk_classifier
 from chroma_client import init_chroma
-from analyzer import analyze_document, compare_documents, explain_clause_with_llm, explain_document_with_llm, generate_negotiation_suggestions, extract_action_items
-from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse, NegotiationRequest, NegotiationResponse, ActionItemsRequest, ActionItemsResponse, SupportCategorizeRequest, SupportCategorizeResponse, SupportDraftRequest, SupportDraftResponse
+from analyzer import analyze_document, compare_documents, summarize_text_diff, explain_clause_with_llm, explain_document_with_llm, generate_negotiation_suggestions, extract_action_items
+from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, CompareTextRequest, CompareTextResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse, NegotiationRequest, NegotiationResponse, ActionItemsRequest, ActionItemsResponse, SupportCategorizeRequest, SupportCategorizeResponse, SupportDraftRequest, SupportDraftResponse
 from chat_agent import chat_agent_instance
 from support_ai import categorize_support_ticket, draft_support_reply
 
@@ -116,6 +116,21 @@ async def compare(request: CompareRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Comparison failed: {str(e)}"
+        )
+
+@app.post("/api/compare_text", response_model=CompareTextResponse)
+async def compare_text(request: CompareTextRequest):
+    """
+    Summarize standard text diff using LLaMA.
+    """
+    try:
+        summary = summarize_text_diff(request.diff_text)
+        return CompareTextResponse(summary=summary)
+    except Exception as e:
+        print(f"Text comparison error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Text comparison failed: {str(e)}"
         )
 
 

@@ -406,17 +406,67 @@ def compare_documents(req: CompareRequest) -> CompareResponse:
         ))
         
     # Build summary
-    summary = f"Compared {len(comparisons)} common clause types. "
-    conflict_count = sum(1 for c in comparisons if c.relationship == 'conflicting')
-    if conflict_count > 0:
-        summary += f"Found {conflict_count} conflicting clauses requiring review."
-    else:
-        summary += "No significant conflicts found."
+    summary = "Comparison completed."
+    if groq_client and comparisons:
+        diff_context = ""
+        for c in comparisons[:15]:  # limit to first 15 to avoid token limits
+            diff_context += f"- Clause Type: {c.clause_type}\n  Original: {c.text_a}\n  Revised: {c.text_b}\n  AI Analysis: {c.relationship}\n\n"
+        
+        prompt = (
+            "You are an expert contract lawyer. Review the following clause comparisons between Document A (Original) and Document B (Revised).\n"
+            "Write a comprehensive summary of the changes in Markdown format.\n"
+            "1. Explain the changes clearly.\n"
+            "2. Conclude which document is better or more balanced for a general party, or if they just serve different purposes.\n"
+            "Comparisons:\n" + diff_context
+        )
+        try:
+            chat_completion = groq_client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                temperature=0.3,
+                max_tokens=1024,
+            )
+            summary = chat_completion.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"Error generating comparison summary with Groq: {e}")
+            summary = f"Compared {len(comparisons)} common clause types. "
+            conflict_count = sum(1 for c in comparisons if c.relationship == 'conflicting')
+            if conflict_count > 0:
+                summary += f"Found {conflict_count} conflicting clauses requiring review."
+            else:
+                summary += "No significant conflicts found."
         
     return CompareResponse(
         comparisons=comparisons,
         summary=summary
     )
+
+def summarize_text_diff(diff_text: str) -> str:
+    groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
+    
+    if not groq_client:
+        return "Standard text comparison performed because AI clause analysis was skipped. (Groq API key not set)"
+        
+    prompt = (
+        "You are an expert contract lawyer. Review the following text diff between Document A (Original) and Document B (Revised).\n"
+        "Lines starting with '+' were added in the revised document, and lines starting with '-' were removed from the original.\n"
+        "Write a comprehensive summary of the changes in Markdown format.\n"
+        "1. Explain the key changes clearly.\n"
+        "2. Conclude which document is better or more balanced, or if they serve different purposes.\n\n"
+        "Diff:\n" + diff_text[:8000] # truncate to avoid token limits
+    )
+    
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        return chat_completion.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"Error generating text diff summary with Groq: {e}")
+        return "Standard text comparison performed because AI clause analysis was skipped."
 
 import json
 from schemas import NegotiationSuggestion, ActionItem

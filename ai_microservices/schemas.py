@@ -60,6 +60,14 @@ class CompareResponse(BaseModel):
     comparisons: list[ClauseComparison] = Field(default_factory=list)
     summary: str = Field(..., description="Overall summary of the differences")
 
+class CompareTextRequest(BaseModel):
+    """Request body for generating a summary for standard text diff."""
+    diff_text: str = Field(..., description="String representation of the text diff")
+
+class CompareTextResponse(BaseModel):
+    """Response containing the summary of standard text diff."""
+    summary: str = Field(..., description="Groq LLaMA generated summary of the diff")
+
 class ExplainClauseRequest(BaseModel):
     """Request body for explaining a specific clause."""
     text: str = Field(..., description="The clause text")

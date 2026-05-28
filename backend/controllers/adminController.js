@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Document = require('../models/Document');
 const AuditLog = require('../models/AuditLog');
 const { getRedisClient } = require('../utils/redisClient');
+const { invalidateCache } = require('../middleware/cache');
 const { logAudit } = require('../services/auditService');
 
 const BLOCKED_IPS_KEY = 'cf:blocked_ips';
@@ -179,6 +180,8 @@ const deleteUser = async (req, res) => {
     await Document.deleteMany({ user: user._id });
     await AuditLog.deleteMany({ user: user._id });
     await User.findByIdAndDelete(user._id);
+    
+    await invalidateCache(user._id);
 
     await logAudit(req.user._id, 'user_delete', 'User', req, {
       targetUserId: user._id,
@@ -261,6 +264,9 @@ const adminDeleteDocument = async (req, res) => {
     if (!doc) return res.status(404).json({ message: 'Document not found' });
 
     await Document.findByIdAndDelete(doc._id);
+    if (doc.user && doc.user._id) {
+        await invalidateCache(doc.user._id);
+    }
 
     await logAudit(req.user._id, 'document_admin_delete', 'Document', req, {
       documentId: doc._id,
