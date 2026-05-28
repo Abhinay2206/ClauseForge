@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
-import { sendChatMessage } from '@/services/documentService';
-import { mockChatHistory, mockDocuments } from '@/services/mockData';
 import { cn } from '@/utils/helpers';
 import DocumentSelector from '@/components/DocumentSelector';
 import ChatTypingIndicator from '@/components/ChatTypingIndicator';
-import type { ChatMessage, Document } from '@/types';
+import { useDocumentStore } from '@/store/documentStore';
+import type { ChatMessage } from '@/types';
 import api from '@/services/api';
 import ReactMarkdown from 'react-markdown';
 
@@ -17,13 +16,26 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatPage() {
-    const [selectedDoc, setSelectedDoc] = useState<Document>(mockDocuments[0]);
+    const { documents, fetchDocuments } = useDocumentStore();
+    const [selectedDocId, setSelectedDocId] = useState<string>('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [chatPhase, setChatPhase] = useState<'searching' | 'analyzing' | 'generating'>('searching');
     const bottomRef = useRef<HTMLDivElement>(null);
+
+    const selectedDoc = documents.find((d) => d.id === selectedDocId);
+
+    useEffect(() => {
+        fetchDocuments(true);
+    }, [fetchDocuments]);
+
+    useEffect(() => {
+        if (!selectedDocId && documents.length > 0) {
+            setSelectedDocId(documents[0].id);
+        }
+    }, [documents, selectedDocId]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,7 +44,7 @@ export default function ChatPage() {
     // Fetch existing chat session for the selected document
     useEffect(() => {
         const loadSession = async () => {
-            if (!selectedDoc) return;
+            if (!selectedDocId) return;
             
             // Clear current chat view
             setMessages([]);
@@ -44,7 +56,7 @@ export default function ChatPage() {
                 
                 // 2. Find the most recent session for this document
                 const docSession = sessions.find((s: any) => 
-                    s.documentIds && s.documentIds.includes(selectedDoc.id)
+                    s.documentIds && s.documentIds.includes(selectedDocId)
                 );
                 
                 if (docSession) {
@@ -65,7 +77,7 @@ export default function ChatPage() {
         };
 
         loadSession();
-    }, [selectedDoc.id]);
+    }, [selectedDocId]);
 
     const handleSend = async () => {
         const text = input.trim();
@@ -103,7 +115,7 @@ export default function ChatPage() {
                 body: JSON.stringify({
                     sessionId: sessionId,
                     content: text,
-                    documentIds: [selectedDoc.id]
+                    documentIds: selectedDocId ? [selectedDocId] : []
                 }),
             });
 
@@ -188,8 +200,8 @@ export default function ChatPage() {
                 <div className="flex-1 min-w-0">
                     <h1 className="text-[20px] font-bold tracking-tight text-[#0F172A] mb-3">AI Assistant</h1>
                     <DocumentSelector
-                        selectedId={selectedDoc.id}
-                        onSelect={setSelectedDoc}
+                        selectedId={selectedDocId}
+                        onSelect={(doc) => setSelectedDocId(doc.id)}
                         label="Discussing"
                     />
                 </div>

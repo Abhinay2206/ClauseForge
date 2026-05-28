@@ -105,7 +105,7 @@ export default function GlobalSearch() {
                                             <span>•</span>
                                             <span className={cn(
                                                 "capitalize",
-                                                doc.status === 'analyzed' ? "text-green-600" : "text-amber-600"
+                                                doc.status === 'completed' ? "text-green-600" : "text-amber-600"
                                             )}>
                                                 {doc.status}
                                             </span>

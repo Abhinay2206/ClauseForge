@@ -1,22 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import api from '@/services/api';
-import type { Document, AnalysisResult, ComparisonResult, ChatMessage, DashboardStats, Report } from '@/types';
-import {
-    mockAnalysis,
-    mockComparison,
-    mockChatResponses,
-    mockDashboardStats,
-} from './mockData';
-
-/**
- * Simulated API delay
- */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Document Service - uses mock data with simulated latency.
- * Swap implementations with real API calls when backend is ready.
- */
+import type { Document, AnalysisResult, ComparisonResult, Report } from '@/types';
 
 export async function getDocuments(): Promise<Document[]> {
     try {
@@ -36,11 +21,6 @@ export async function getDocuments(): Promise<Document[]> {
         console.error('Failed to fetch documents:', error);
         return [];
     }
-}
-
-export async function getDocument(id: string): Promise<Document | undefined> {
-    await delay(500);
-    return undefined; // mock disabled
 }
 
 export async function deleteDocument(id: string): Promise<void> {
@@ -184,33 +164,6 @@ export async function getAllActionItems() {
         console.error('Failed to get all action items:', error);
         return { items: [] };
     }
-}
-
-export async function sendChatMessage(
-    message: string,
-    _documentId?: string
-): Promise<ChatMessage> {
-    await delay(1500);
-
-    const lowerMsg = message.toLowerCase();
-    let responseContent = mockChatResponses.default;
-
-    if (lowerMsg.includes('risk')) responseContent = mockChatResponses.risk;
-    else if (lowerMsg.includes('clause')) responseContent = mockChatResponses.clause;
-    else if (lowerMsg.includes('summary') || lowerMsg.includes('summarize'))
-        responseContent = mockChatResponses.summary;
-
-    return {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: responseContent,
-        timestamp: new Date().toISOString(),
-    };
-}
-
-export async function getDashboardStats(): Promise<DashboardStats> {
-    await delay(600);
-    return mockDashboardStats;
 }
 
 export async function getReport(documentId: string): Promise<Report> {

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./utils/db');
+const http = require('http');
 
 // Route files
 const authRoutes = require('./routes/authRoute');
@@ -10,6 +11,7 @@ const documentRoutes = require('./routes/documentRoute');
 const chatRoutes = require('./routes/chatRoute');
 const adminRoutes = require('./routes/adminRoute');
 const emailRoutes = require('./routes/emailRoute');
+const supportRoutes = require('./routes/supportRoute');
 
 // Worker services
 const { initializeWorker } = require('./services/workerService');
@@ -17,8 +19,10 @@ require('./services/emailWorker');
 
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { blockIP } = require('./middleware/blockIP');
+const { initSocket } = require('./services/socketManager');
 
 const app = express();
+const server = http.createServer(app);
 
 // Connect to database
 connectDB();
@@ -48,6 +52,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/support', supportRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {
@@ -56,6 +61,9 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
+// Initialize WebSockets
+initSocket(server);
+
+server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

@@ -123,8 +123,8 @@ export default function AnalysisPage() {
         if (!selectedDoc) return;
         setIsGeneratingReport(true);
         try {
-            const reportText = await generateDocumentReport(selectedDoc.id);
-            const blob = new Blob([reportText], { type: 'text/plain' });
+            const report = await generateDocumentReport(selectedDoc.id);
+            const blob = new Blob([report.fullAiReport ?? ''], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

@@ -21,6 +21,9 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const NegotiationPage = lazy(() => import('@/pages/NegotiationPage'));
 const ActionItemsPage = lazy(() => import('@/pages/ActionItemsPage'));
+const SupportPage = lazy(() => import('@/pages/SupportPage'));
+const SupportTicketPage = lazy(() => import('@/pages/SupportTicketPage'));
+const PublicHelpPage = lazy(() => import('@/pages/PublicHelpPage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -28,6 +31,7 @@ const AdminDocumentsPage = lazy(() => import('@/pages/admin/AdminDocumentsPage')
 const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'));
 const AdminSecurityPage = lazy(() => import('@/pages/admin/AdminSecurityPage'));
 const AdminSystemPage = lazy(() => import('@/pages/admin/AdminSystemPage'));
+const AdminSupportPage = lazy(() => import('@/pages/admin/AdminSupportPage'));
 
 
 /**
@@ -79,11 +83,11 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
  */
 function RouteTitleUpdater() {
   const location = useLocation();
-  
+
   useEffect(() => {
     const path = location.pathname;
     let title = 'ClauseForge';
-    
+
     if (path === '/') title = 'ClauseForge | AI Contract Analysis';
     else if (path.startsWith('/login')) title = 'Login | ClauseForge';
     else if (path.startsWith('/signup')) title = 'Sign Up | ClauseForge';
@@ -102,11 +106,14 @@ function RouteTitleUpdater() {
     else if (path.startsWith('/admin/analytics')) title = 'Analytics | Admin';
     else if (path.startsWith('/admin/security')) title = 'Security | Admin';
     else if (path.startsWith('/admin/system')) title = 'System Health | Admin';
+    else if (path.startsWith('/admin/support')) title = 'Support Desk | Admin';
+    else if (path.startsWith('/help')) title = 'Help Center | ClauseForge';
+    else if (path.startsWith('/support')) title = 'Support | ClauseForge';
     else if (path.startsWith('/admin/')) {
-        const sub = path.replace('/admin/', '');
-        title = `${sub.charAt(0).toUpperCase() + sub.slice(1)} | Admin`;
+      const sub = path.replace('/admin/', '');
+      title = `${sub.charAt(0).toUpperCase() + sub.slice(1)} | Admin`;
     }
-    
+
     document.title = title;
   }, [location]);
 
@@ -124,6 +131,7 @@ export default function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/help" element={<Suspense fallback={<GlobalLoader message="Loading Help Center..." fullScreen={true} />}><PublicHelpPage /></Suspense>} />
           <Route path="/login" element={<RequireGuest><LoginPage /></RequireGuest>} />
           <Route path="/signup" element={<RequireGuest><SignupPage /></RequireGuest>} />
 
@@ -143,6 +151,8 @@ export default function App() {
             <Route path="/chat" element={<Suspense fallback={<GlobalLoader message="Loading AI assistant..." fullScreen={false} />}><ChatPage /></Suspense>} />
             <Route path="/negotiation" element={<Suspense fallback={<GlobalLoader message="Loading negotiation..." fullScreen={false} />}><NegotiationPage /></Suspense>} />
             <Route path="/actions" element={<Suspense fallback={<GlobalLoader message="Loading action items..." fullScreen={false} />}><ActionItemsPage /></Suspense>} />
+            <Route path="/support" element={<Suspense fallback={<GlobalLoader message="Loading support..." fullScreen={false} />}><SupportPage /></Suspense>} />
+            <Route path="/support/:id" element={<Suspense fallback={<GlobalLoader message="Loading ticket..." fullScreen={false} />}><SupportTicketPage /></Suspense>} />
             <Route path="/report" element={<Suspense fallback={<GlobalLoader message="Loading reports..." fullScreen={false} />}><ReportPage /></Suspense>} />
             <Route path="/profile" element={<Suspense fallback={<GlobalLoader message="Loading profile..." fullScreen={false} />}><ProfilePage /></Suspense>} />
           </Route>
@@ -160,8 +170,10 @@ export default function App() {
             <Route path="/admin/documents" element={<Suspense fallback={<GlobalLoader message="Loading documents..." fullScreen={false} />}><AdminDocumentsPage /></Suspense>} />
             <Route path="/admin/analytics" element={<Suspense fallback={<GlobalLoader message="Loading analytics..." fullScreen={false} />}><AdminAnalyticsPage /></Suspense>} />
             <Route path="/admin/security" element={<Suspense fallback={<GlobalLoader message="Loading security center..." fullScreen={false} />}><AdminSecurityPage /></Suspense>} />
+            <Route path="/admin/support" element={<Suspense fallback={<GlobalLoader message="Loading support desk..." fullScreen={false} />}><AdminSupportPage /></Suspense>} />
+            <Route path="/admin/support/:id" element={<Suspense fallback={<GlobalLoader message="Loading ticket..." fullScreen={false} />}><SupportTicketPage /></Suspense>} />
             <Route path="/admin/system" element={<Suspense fallback={<GlobalLoader message="Loading system health..." fullScreen={false} />}><AdminSystemPage /></Suspense>} />
-            
+
             {/* Workspace tools rendered inside Admin Layout for admins */}
             <Route path="/admin/workspace" element={<Suspense fallback={<GlobalLoader message="Loading documents..." fullScreen={false} />}><DashboardPage /></Suspense>} />
             <Route path="/admin/upload" element={<Suspense fallback={<GlobalLoader message="Loading uploader..." fullScreen={false} />}><UploadPage /></Suspense>} />

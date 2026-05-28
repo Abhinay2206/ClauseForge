@@ -18,7 +18,8 @@ import {
     Search,
     Bell,
     PenTool,
-    CheckSquare
+    CheckSquare,
+    LifeBuoy
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -29,6 +30,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 const workspaceItems = [
     { to: '/dashboard', icon: FolderOpen, label: 'Documents' },
     { to: '/upload',    icon: Plus,       label: 'New Document' },
+    { to: '/support',   icon: LifeBuoy,   label: 'Support' },
 ];
 
 const toolItems = [
@@ -52,6 +54,7 @@ const PAGE_TITLES: Record<string, string> = {
     '/chat':      'AI Assistant',
     '/report':    'Reports',
     '/profile':   'Profile',
+    '/support':   'Support Desk',
 };
 
 function NavGroup({ label, items, onClick }: {

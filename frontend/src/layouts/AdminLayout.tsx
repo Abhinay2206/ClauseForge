@@ -20,7 +20,8 @@ import {
     ShieldAlert,
     GitCompareArrows,
     MessageSquare,
-    Search
+    Search,
+    LifeBuoy
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -50,6 +51,7 @@ const adminNavItems: NavGroup[] = [
             { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
             { to: '/admin/security', icon: ShieldCheck, label: 'Security' },
             { to: '/admin/system', icon: Server, label: 'System Health' },
+            { to: '/admin/support', icon: LifeBuoy, label: 'Support Desk' },
         ]
     },
     {
@@ -85,6 +87,7 @@ const PAGE_TITLES: Record<string, string> = {
     '/admin/analytics': 'Analytics',
     '/admin/security': 'Security Center',
     '/admin/system': 'System Health',
+    '/admin/support': 'Support Desk',
 };
 
 export default function AdminLayout() {
