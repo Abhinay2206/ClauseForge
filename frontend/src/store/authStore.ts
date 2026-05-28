@@ -6,6 +6,7 @@ interface AuthStore {
     user: User | null;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
+    googleLogin: (payload: { credential?: string; accessToken?: string }) => Promise<void>;
     signup: (name: string, email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 }
@@ -35,6 +36,26 @@ export const useAuthStore = create<AuthStore>((set) => ({
             set({ user, isAuthenticated: true });
         } catch (error: any) {
             throw new Error(error.response?.data?.message || 'Login failed');
+        }
+    },
+
+    googleLogin: async (payload: { credential?: string; accessToken?: string }) => {
+        try {
+            const { data } = await api.post('/api/auth/google', payload);
+            
+            const user: User = {
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role || 'user',
+                status: data.status || 'active',
+            };
+
+            localStorage.setItem('clauseforge_user', JSON.stringify(user));
+            
+            set({ user, isAuthenticated: true });
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || 'Google Login failed');
         }
     },
 

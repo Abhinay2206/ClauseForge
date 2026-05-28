@@ -1,6 +1,10 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { logAudit } = require('../services/auditService');
+const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -142,9 +146,96 @@ const logoutUser = (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
+// @desc    Authenticate with Google
+// @route   POST /api/auth/google
+// @access  Public
+const googleLogin = async (req, res) => {
+  const { credential, accessToken } = req.body;
+
+  try {
+    let email, name, googleId;
+
+    if (credential) {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+      });
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      googleId = payload.sub;
+    } else if (accessToken) {
+      const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      email = response.data.email;
+      name = response.data.name;
+      googleId = response.data.sub;
+    } else {
+      return res.status(400).json({ message: 'No credential or access token provided' });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+
+      if (user.status === 'blocked') {
+        return res.status(403).json({ message: 'Your account has been blocked. Please contact support.' });
+      }
+      if (user.status === 'suspended') {
+        return res.status(403).json({ message: `Your account is suspended. Reason: ${user.suspendedReason || 'Please contact support.'}` });
+      }
+
+      // Update login tracking
+      let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+      if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') clientIp = '127.0.0.1';
+      
+      user.lastLoginAt = new Date();
+      user.loginCount = (user.loginCount || 0) + 1;
+      user.lastIpAddress = clientIp;
+      await user.save();
+
+      await logAudit(user._id, 'login', 'UserSession', req, { method: 'google' });
+
+    } else {
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        password: '', // will be ignored or bypassed due to schema update
+      });
+      await logAudit(user._id, 'signup', 'UserAccount', req, { method: 'google' });
+    }
+
+    const token = generateToken(user._id);
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ message: 'Failed to authenticate with Google' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
-  getMe
+  getMe,
+  googleLogin
 };
