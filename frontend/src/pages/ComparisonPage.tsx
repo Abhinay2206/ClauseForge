@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GitCompareArrows, X, Plus, Upload, ArrowLeftRight, FileType2, FileText } from 'lucide-react';
+import { GitCompareArrows, X, Plus, Upload, ArrowLeftRight, FileType2, FileText, History, Clock } from 'lucide-react';
 import ComparisonViewer from '@/components/ComparisonViewer';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
-import { compareDocuments, getDocuments } from '@/services/documentService';
+import { compareDocuments, getDocuments, getComparisonHistory, getComparisonById } from '@/services/documentService';
 import { cn } from '@/utils/helpers';
-import type { ComparisonResult, Document } from '@/types';
+import type { ComparisonResult, Document, ComparisonHistoryItem } from '@/types';
 
 function getDocIcon(type: string) {
     if (type.includes('pdf')) return FileType2;
@@ -225,10 +225,23 @@ export default function ComparisonPage() {
     const [comparison, setComparison] = useState<ComparisonResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [documents, setDocuments] = useState<Document[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [historyList, setHistoryList] = useState<ComparisonHistoryItem[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     useEffect(() => {
         getDocuments().then(setDocuments);
     }, []);
+
+    useEffect(() => {
+        if (showHistory) {
+            setIsLoadingHistory(true);
+            getComparisonHistory().then(data => {
+                setHistoryList(data);
+                setIsLoadingHistory(false);
+            });
+        }
+    }, [showHistory]);
 
     const libraryDocs = documents.filter((d) => d.status === 'completed');
 
@@ -238,6 +251,23 @@ export default function ComparisonPage() {
         setComparison(null);
         const result = await compareDocuments(docA.id, docB.id);
         setComparison(result);
+        setIsLoading(false);
+    };
+
+    const handleLoadHistory = async (id: string) => {
+        setIsLoading(true);
+        setShowHistory(false);
+        setComparison(null);
+        try {
+            const data = await getComparisonById(id);
+            setComparison(data);
+            const foundA = documents.find(d => d.id === data.documentA.id);
+            const foundB = documents.find(d => d.id === data.documentB.id);
+            if (foundA) setDocA(foundA);
+            if (foundB) setDocB(foundB);
+        } catch (error) {
+            console.error(error);
+        }
         setIsLoading(false);
     };
 
@@ -251,17 +281,77 @@ export default function ComparisonPage() {
     return (
         <div className="cf-page">
             {/* Header */}
-            <div className="animate-fade-slide-up">
-                <h1 className="text-[20px] font-bold tracking-tight text-[#0F172A]">
-                    Compare Documents
-                </h1>
-                <p className="text-[13px] text-[#64748B] mt-1">
-                    Select two documents to compare them side-by-side and identify every change.
-                </p>
+            <div className="flex items-center justify-between animate-fade-slide-up mb-6">
+                <div>
+                    <h1 className="text-[20px] font-bold tracking-tight text-[#0F172A]">
+                        Compare Documents
+                    </h1>
+                    <p className="text-[13px] text-[#64748B] mt-1">
+                        Select two documents to compare them side-by-side and identify every change.
+                    </p>
+                </div>
+                <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className={cn(
+                        "cf-btn cf-btn-outline transition-all",
+                        showHistory && "bg-slate-100"
+                    )}
+                >
+                    <History size={16} />
+                    {showHistory ? "Back to Compare" : "History"}
+                </button>
             </div>
 
+            {/* History View */}
+            {showHistory && (
+                <div className="cf-card p-4 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
+                    <h2 className="text-[16px] font-semibold text-[#0F172A] mb-4">Past Comparisons</h2>
+                    {isLoadingHistory ? (
+                        <div className="flex justify-center p-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
+                    ) : historyList.length === 0 ? (
+                        <div className="text-center p-8 text-[#64748B]">
+                            <History className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                            <p className="text-[14px]">No comparison history found.</p>
+                        </div>
+                    ) : (
+                        <div className="grid gap-3">
+                            {historyList.map(item => (
+                                <div key={item._id} className="border border-slate-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all flex items-center justify-between bg-white">
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="text-[14px] font-semibold text-slate-900 truncate" title={item.documentA.name}>{formatDocLabel(item.documentA.name)}</span>
+                                            <ArrowLeftRight size={14} className="text-slate-400 shrink-0" />
+                                            <span className="text-[14px] font-semibold text-slate-900 truncate" title={item.documentB.name}>{formatDocLabel(item.documentB.name)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-[12px] text-slate-500">
+                                            <span className="flex items-center gap-1.5">
+                                                <Clock size={12} />
+                                                {new Date(item.createdAt).toLocaleDateString()}
+                                            </span>
+                                            <span>{item.similarity}% Match</span>
+                                            <span>{item.changes} changes</span>
+                                        </div>
+                                        {item.summary && (
+                                            <p className="text-[13px] text-slate-600 mt-2 line-clamp-1">{item.summary}</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => handleLoadHistory(item._id)}
+                                        className="cf-btn cf-btn-outline cf-btn-sm shrink-0 whitespace-nowrap"
+                                    >
+                                        View
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Slot workspace */}
-            {!comparison && !isLoading && (
+            {!showHistory && !comparison && !isLoading && (
                 <div className="cf-card p-4 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
                     <div className="flex flex-col lg:flex-row gap-4 items-start">
                         {/* Slot A */}

@@ -2,6 +2,7 @@ const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
 const Document = require('../models/Document');
+const Comparison = require('../models/Comparison');
 const { invalidateCache } = require('../middleware/cache');
 const { logAudit } = require('../services/auditService');
 
@@ -161,7 +162,23 @@ const compareDocuments = async (req, res) => {
     }
 
     const { compareDocumentsAI } = require('../services/aiService');
-    const aiResult = await compareDocumentsAI(docA.clauses, docB.clauses);
+    
+    const formatClausesForAI = (clauses) => clauses.map(c => ({
+      id: c.clauseId,
+      text: c.text,
+      type: c.type,
+      risk_level: c.riskLevel,
+      confidence: c.confidence,
+      risk_confidence: c.riskConfidence,
+      explanation: c.explanation,
+      start_index: c.startIndex,
+      end_index: c.endIndex,
+    }));
+
+    const aiResult = await compareDocumentsAI(
+      formatClausesForAI(docA.clauses),
+      formatClausesForAI(docB.clauses)
+    );
 
     const comparisonResult = {
       documentA: { id: docA._id, name: docA.name },
@@ -183,7 +200,46 @@ const compareDocuments = async (req, res) => {
       ? Math.round((similarCount / aiResult.comparisons.length) * 100)
       : 100;
 
-    res.json(comparisonResult);
+    const savedComparison = await Comparison.create({
+      user: req.user._id,
+      ...comparisonResult
+    });
+
+    res.json({ ...comparisonResult, id: savedComparison._id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get user comparison history
+// @route   GET /api/documents/comparisons
+// @access  Private
+const getComparisons = async (req, res) => {
+  try {
+    const comparisons = await Comparison.find({ user: req.user._id })
+      .select('-clauseComparisons')
+      .sort('-createdAt');
+    res.json(comparisons);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get specific comparison
+// @route   GET /api/documents/comparisons/:id
+// @access  Private
+const getComparisonById = async (req, res) => {
+  try {
+    const comparison = await Comparison.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!comparison) {
+      return res.status(404).json({ message: 'Comparison not found' });
+    }
+
+    res.json(comparison);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -478,5 +534,7 @@ module.exports = {
   negotiateDocument,
   documentActionItems,
   getAllActionItems,
-  deleteDocument
+  deleteDocument,
+  getComparisons,
+  getComparisonById
 };

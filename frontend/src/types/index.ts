@@ -96,6 +96,7 @@ export interface ClauseComparison {
 }
 
 export interface ComparisonResult {
+    id?: string;
     documentA: { id: string; name: string };
     documentB: { id: string; name: string };
     diffA: DiffSegment[];
@@ -104,6 +105,16 @@ export interface ComparisonResult {
     changes: number;
     summary?: string;
     clauseComparisons?: ClauseComparison[];
+}
+
+export interface ComparisonHistoryItem {
+    _id: string;
+    documentA: { id: string; name: string };
+    documentB: { id: string; name: string };
+    similarity: number;
+    changes: number;
+    summary: string;
+    createdAt: string;
 }
 
 // ──── Chat ────

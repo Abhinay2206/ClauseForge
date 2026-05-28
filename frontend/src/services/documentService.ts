@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import api from '@/services/api';
-import type { Document, AnalysisResult, ComparisonResult, Report } from '@/types';
+import type { Document, AnalysisResult, ComparisonResult, Report, ComparisonHistoryItem } from '@/types';
 
 export async function getDocuments(): Promise<Document[]> {
     try {
@@ -101,6 +101,26 @@ export async function compareDocuments(
         return data;
     } catch (error) {
         console.error('Failed to compare documents:', error);
+        throw error;
+    }
+}
+
+export async function getComparisonHistory(): Promise<ComparisonHistoryItem[]> {
+    try {
+        const { data } = await api.get('/api/documents/comparisons');
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch comparison history:', error);
+        return [];
+    }
+}
+
+export async function getComparisonById(id: string): Promise<ComparisonResult> {
+    try {
+        const { data } = await api.get(`/api/documents/comparisons/${id}`);
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch comparison:', error);
         throw error;
     }
 }
