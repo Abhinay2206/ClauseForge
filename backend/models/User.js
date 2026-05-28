@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema({
     reports: { type: Boolean, default: true },
     alerts: { type: Boolean, default: true }
   },
+  aiUsage: {
+    calls: { type: Number, default: 0 },
+    promptTokens: { type: Number, default: 0 },
+    completionTokens: { type: Number, default: 0 },
+    totalTokens: { type: Number, default: 0 }
+  },
   status: {
     type: String,
     enum: ['active', 'suspended', 'blocked'],

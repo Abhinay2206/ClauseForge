@@ -18,7 +18,8 @@ const {
   blockIPAddress,
   unblockIPAddress,
   getSystemHealth,
-  getRedisStats
+  getRedisStats,
+  getDLQJobs
 } = require('../controllers/adminController');
 
 // All admin routes require authentication + admin role
@@ -51,5 +52,6 @@ router.delete('/ip/unblock/:ip', unblockIPAddress);
 // ── System Health ──────────────────────────
 router.get('/system/health', getSystemHealth);
 router.get('/system/redis-stats', getRedisStats);
+router.get('/system/dlq', getDLQJobs);
 
 module.exports = router;

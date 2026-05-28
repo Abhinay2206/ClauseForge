@@ -8,6 +8,7 @@ import type {
     ActivityDataPoint,
     SystemHealth,
     RedisStats,
+    DLQJob,
 } from '@/types';
 
 // ──── Users ────────────────────────────────────────────────────────────────
@@ -156,5 +157,10 @@ export const getSystemHealth = async (): Promise<SystemHealth> => {
 
 export const getRedisStats = async (): Promise<RedisStats> => {
     const { data } = await api.get('/api/admin/system/redis-stats');
+    return data;
+};
+
+export const getDLQJobs = async (): Promise<{ jobs: DLQJob[] }> => {
+    const { data } = await api.get('/api/admin/system/dlq');
     return data;
 };

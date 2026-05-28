@@ -23,6 +23,12 @@ class DetectedClause(BaseModel):
     end_index: int = Field(default=0, description="End character index in source text")
 
 
+class TokenUsage(BaseModel):
+    """LLM token usage tracking."""
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
 class AnalyzeResponse(BaseModel):
     """Full analysis response for a document."""
     document_id: str
@@ -31,6 +37,7 @@ class AnalyzeResponse(BaseModel):
     clauses: list[DetectedClause] = Field(default_factory=list)
     summary: str = Field(..., description="AI-generated analysis summary")
     total_chunks: int = Field(..., description="Total chunks processed from ChromaDB")
+    usage: TokenUsage | None = None
 
 
 class HealthResponse(BaseModel):
@@ -59,6 +66,7 @@ class CompareResponse(BaseModel):
     """Response for document comparison."""
     comparisons: list[ClauseComparison] = Field(default_factory=list)
     summary: str = Field(..., description="Overall summary of the differences")
+    usage: TokenUsage | None = None
 
 class CompareTextRequest(BaseModel):
     """Request body for generating a summary for standard text diff."""
@@ -67,6 +75,7 @@ class CompareTextRequest(BaseModel):
 class CompareTextResponse(BaseModel):
     """Response containing the summary of standard text diff."""
     summary: str = Field(..., description="Groq LLaMA generated summary of the diff")
+    usage: TokenUsage | None = None
 
 class ExplainClauseRequest(BaseModel):
     """Request body for explaining a specific clause."""
@@ -77,6 +86,7 @@ class ExplainClauseRequest(BaseModel):
 class ExplainClauseResponse(BaseModel):
     """Response containing the AI explanation."""
     explanation: str = Field(..., description="Groq LLaMA generated explanation")
+    usage: TokenUsage | None = None
 
 class ExplainDocumentRequest(BaseModel):
     """Request body for generating a full document AI report."""
@@ -87,6 +97,7 @@ class ExplainDocumentRequest(BaseModel):
 class ExplainDocumentResponse(BaseModel):
     """Response containing the full document AI report."""
     report: str = Field(..., description="Groq LLaMA generated comprehensive report")
+    usage: TokenUsage | None = None
 
 class NegotiationSuggestion(BaseModel):
     """A suggested redline/edit for a clause."""
@@ -101,6 +112,7 @@ class NegotiationRequest(BaseModel):
 class NegotiationResponse(BaseModel):
     """Response containing negotiation suggestions."""
     suggestions: list[NegotiationSuggestion] = Field(default_factory=list)
+    usage: TokenUsage | None = None
 
 class ActionItem(BaseModel):
     """An actionable workflow task extracted from a document."""
@@ -113,8 +125,9 @@ class ActionItemsRequest(BaseModel):
     clauses: list[DetectedClause] = Field(..., description="All detected clauses in the document")
 
 class ActionItemsResponse(BaseModel):
-    """Response containing actionable items."""
-    items: list[ActionItem] = Field(default_factory=list)
+    """Response containing a list of action items."""
+    action_items: list[ActionItem] = Field(default_factory=list)
+    usage: TokenUsage | None = None
 
 class SupportCategorizeRequest(BaseModel):
     """Request body for support ticket triage."""

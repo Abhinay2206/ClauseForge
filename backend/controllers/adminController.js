@@ -576,11 +576,31 @@ const getSystemHealth = async (req, res) => {
       aiHealthy = true;
     } catch {}
 
+    // Aggregate AI Usage across all users
+    let aiUsageStats = { totalCalls: 0, totalTokens: 0 };
+    try {
+      const usageAggregation = await User.aggregate([
+        { $group: {
+          _id: null,
+          totalCalls: { $sum: '$aiUsage.calls' },
+          totalTokens: { $sum: '$aiUsage.totalTokens' }
+        }}
+      ]);
+      if (usageAggregation.length > 0) {
+        aiUsageStats = {
+          totalCalls: usageAggregation[0].totalCalls,
+          totalTokens: usageAggregation[0].totalTokens
+        };
+      }
+    } catch (e) {
+      console.error('Error aggregating AI usage:', e);
+    }
+
     res.json({
       mongodb: { connected: mongoConnected, readyState: mongoStatus },
       redis: { connected: redisConnected, pingMs: redisPing },
       queue: { depth: queueDepth },
-      aiService: { healthy: aiHealthy },
+      aiService: { healthy: aiHealthy, usage: aiUsageStats },
       server: {
         uptime: process.uptime(),
         nodeVersion: process.version,
@@ -628,6 +648,36 @@ const getRedisStats = async (req, res) => {
   }
 };
 
+// @desc    Get DLQ Jobs
+// @route   GET /api/admin/system/dlq
+// @access  Admin / Moderator / Support
+const getDLQJobs = async (req, res) => {
+  try {
+    const { documentDLQ } = require('../queues/documentQueue');
+    // The dlq-jobs are likely just in the "waiting" or "active" state of the documentDLQ queue
+    const jobs = await documentDLQ.getJobs(['waiting', 'active', 'delayed', 'failed', 'completed']);
+    
+    // Process and sort jobs
+    const formattedJobs = await Promise.all(jobs.map(async (j) => ({
+      id: j.id,
+      name: j.name,
+      data: j.data,
+      timestamp: j.timestamp,
+      processedOn: j.processedOn,
+      finishedOn: j.finishedOn,
+      failedReason: j.failedReason,
+      state: await j.getState()
+    })));
+    
+    formattedJobs.sort((a, b) => b.timestamp - a.timestamp);
+
+    res.json({ jobs: formattedJobs });
+  } catch (error) {
+    console.error('Error fetching DLQ jobs:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   // Users
   getUsers,
@@ -650,5 +700,6 @@ module.exports = {
   unblockIPAddress,
   // System
   getSystemHealth,
-  getRedisStats
+  getRedisStats,
+  getDLQJobs
 };

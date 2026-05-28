@@ -14,7 +14,7 @@ For each document:
 import uuid
 from models_loader import get_clause_classifier, get_risk_classifier
 from chroma_client import get_document_chunks
-from schemas import AnalyzeResponse, DetectedClause
+from schemas import AnalyzeResponse, DetectedClause, TokenUsage
 from config import settings
 from groq import Groq
 
@@ -147,15 +147,15 @@ def _calculate_overall_risk(clauses: list[DetectedClause]) -> tuple[int, str]:
     return score, level
 
 
-def _generate_summary(clauses: list[DetectedClause], risk_score: int, risk_level: str) -> str:
+def _generate_summary(clauses: list[DetectedClause], risk_score: int, risk_level: str) -> tuple[str, TokenUsage | None]:
     """Generate a human-readable summary of the analysis results using Groq Llama 3."""
     if not clauses:
-        return "No significant clauses were detected in this document."
+        return "No significant clauses were detected in this document.", None
 
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client:
-        return f"Analysis identified {len(clauses)} significant clauses with an overall risk score of {risk_score}/100 ({risk_level} risk). (Groq API key not configured)"
+        return f"Analysis identified {len(clauses)} significant clauses with an overall risk score of {risk_score}/100 ({risk_level} risk). (Groq API key not configured)", None
 
     # Prepare a condensed representation of clauses for the prompt
     clause_summaries = []
@@ -176,17 +176,22 @@ def _generate_summary(clauses: list[DetectedClause], risk_score: int, risk_level
             temperature=0.3,
             max_tokens=150,
         )
-        return chat_completion.choices[0].message.content.strip()
+        usage = TokenUsage(
+            prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+            completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+            total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+        )
+        return chat_completion.choices[0].message.content.strip(), usage
     except Exception as e:
         print(f"Error generating summary with Groq: {e}")
-        return f"Analysis identified {len(clauses)} significant clauses with an overall risk score of {risk_score}/100 ({risk_level} risk)."
+        return f"Analysis identified {len(clauses)} significant clauses with an overall risk score of {risk_score}/100 ({risk_level} risk).", None
 
-def explain_clause_with_llm(text: str, clause_type: str, risk_level: str) -> str:
+def explain_clause_with_llm(text: str, clause_type: str, risk_level: str) -> tuple[str, TokenUsage | None]:
     """Generate a simple clear explanation of a clause using Groq Llama 3."""
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client:
-        return "Explanation unavailable (Groq API key not set)."
+        return "Explanation unavailable (Groq API key not set).", None
 
     prompt = (
         f"You are a legal expert explaining contract clauses to a layperson.\n"
@@ -203,18 +208,23 @@ def explain_clause_with_llm(text: str, clause_type: str, risk_level: str) -> str
             temperature=0.3,
             max_tokens=150,
         )
-        return chat_completion.choices[0].message.content.strip()
+        usage = TokenUsage(
+            prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+            completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+            total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+        )
+        return chat_completion.choices[0].message.content.strip(), usage
     except Exception as e:
         print(f"Error generating explanation with Groq: {e}")
-        return "Failed to generate explanation. Please try again."
+        return "Failed to generate explanation. Please try again.", None
 
 
-def explain_document_with_llm(clauses: list[DetectedClause], risk_score: int, risk_level: str) -> str:
+def explain_document_with_llm(clauses: list[DetectedClause], risk_score: int, risk_level: str) -> tuple[str, TokenUsage | None]:
     """Generate a comprehensive document report using Groq Llama 3."""
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client:
-        return "Explanation unavailable (Groq API key not set)."
+        return "Explanation unavailable (Groq API key not set).", None
 
     clause_summaries = []
     for c in clauses:
@@ -238,10 +248,15 @@ def explain_document_with_llm(clauses: list[DetectedClause], risk_score: int, ri
             temperature=0.3,
             max_tokens=2048,
         )
-        return chat_completion.choices[0].message.content.strip()
+        usage = TokenUsage(
+            prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+            completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+            total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+        )
+        return chat_completion.choices[0].message.content.strip(), usage
     except Exception as e:
         print(f"Error generating document explanation with Groq: {e}")
-        return "Failed to generate comprehensive explanation. Please try again."
+        return "Failed to generate comprehensive explanation. Please try again.", None
 
 
 def analyze_document(document_id: str) -> AnalyzeResponse:
@@ -329,7 +344,7 @@ def analyze_document(document_id: str) -> AnalyzeResponse:
     risk_score, overall_risk_level = _calculate_overall_risk(detected_clauses)
 
     # 5. Generate summary
-    summary = _generate_summary(detected_clauses, risk_score, overall_risk_level)
+    summary, usage = _generate_summary(detected_clauses, risk_score, overall_risk_level)
 
     print(f"  ✓ {len(detected_clauses)} clauses detected, risk score: {risk_score} ({overall_risk_level})")
 
@@ -340,9 +355,14 @@ def analyze_document(document_id: str) -> AnalyzeResponse:
         clauses=detected_clauses,
         summary=summary,
         total_chunks=len(chunks),
+        usage=usage
     )
 
-from schemas import CompareRequest, CompareResponse, ClauseComparison
+from schemas import (
+    AnalyzeRequest, AnalyzeResponse, DetectedClause, 
+    CompareRequest, CompareResponse, ClauseComparison,
+    NegotiationSuggestion, ActionItem, TokenUsage
+)
 from models_loader import get_comparison_classifier
 import time
 
@@ -427,6 +447,11 @@ def compare_documents(req: CompareRequest) -> CompareResponse:
                 max_tokens=1024,
             )
             summary = chat_completion.choices[0].message.content.strip()
+            usage = TokenUsage(
+                prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+                completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+                total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+            )
         except Exception as e:
             print(f"Error generating comparison summary with Groq: {e}")
             summary = f"Compared {len(comparisons)} common clause types. "
@@ -438,14 +463,15 @@ def compare_documents(req: CompareRequest) -> CompareResponse:
         
     return CompareResponse(
         comparisons=comparisons,
-        summary=summary
+        summary=summary,
+        usage=usage
     )
 
-def summarize_text_diff(diff_text: str) -> str:
+def summarize_text_diff(diff_text: str) -> tuple[str, TokenUsage | None]:
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client:
-        return "Standard text comparison performed because AI clause analysis was skipped. (Groq API key not set)"
+        return "Standard text comparison performed because AI clause analysis was skipped. (Groq API key not set)", None
         
     prompt = (
         "You are an expert contract lawyer. Review the following text diff between Document A (Original) and Document B (Revised).\n"
@@ -463,19 +489,24 @@ def summarize_text_diff(diff_text: str) -> str:
             temperature=0.3,
             max_tokens=1024,
         )
-        return chat_completion.choices[0].message.content.strip()
+        usage = TokenUsage(
+            prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+            completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+            total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+        )
+        return chat_completion.choices[0].message.content.strip(), usage
     except Exception as e:
         print(f"Error generating text diff summary with Groq: {e}")
-        return "Standard text comparison performed because AI clause analysis was skipped."
+        return "Standard text comparison performed because AI clause analysis was skipped.", None
 
 import json
 from schemas import NegotiationSuggestion, ActionItem
 
-def generate_negotiation_suggestions(clauses: list[DetectedClause]) -> list[NegotiationSuggestion]:
+def generate_negotiation_suggestions(clauses: list[DetectedClause]) -> tuple[list[NegotiationSuggestion], TokenUsage | None]:
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client or not clauses:
-        return []
+        return [], None
         
     clause_texts = []
     for i, c in enumerate(clauses[:10]):
@@ -508,16 +539,21 @@ def generate_negotiation_suggestions(clauses: list[DetectedClause]) -> list[Nego
                     suggested_text=item.get("suggested_text", ""),
                     reasoning=item.get("reasoning", "")
                 ))
-            return results
+            usage = TokenUsage(
+                prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+                completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+                total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+            )
+            return results, usage
     except Exception as e:
         print(f"Error generating negotiation suggestions: {e}")
-    return []
+    return [], None
 
-def extract_action_items(clauses: list[DetectedClause]) -> list[ActionItem]:
+def extract_action_items(clauses: list[DetectedClause]) -> tuple[list[ActionItem], TokenUsage | None]:
     groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
     
     if not groq_client or not clauses:
-        return []
+        return [], None
         
     clause_texts = []
     for i, c in enumerate(clauses[:20]):
@@ -549,7 +585,12 @@ def extract_action_items(clauses: list[DetectedClause]) -> list[ActionItem]:
                     deadline=item.get("deadline", ""),
                     description=item.get("description", "")
                 ))
-            return results
+            usage = TokenUsage(
+                prompt_tokens=chat_completion.usage.prompt_tokens if chat_completion.usage else 0,
+                completion_tokens=chat_completion.usage.completion_tokens if chat_completion.usage else 0,
+                total_tokens=chat_completion.usage.total_tokens if chat_completion.usage else 0
+            )
+            return results, usage
     except Exception as e:
         print(f"Error extracting action items: {e}")
-    return []
+    return [], None

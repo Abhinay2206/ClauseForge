@@ -6,6 +6,7 @@ const Document = require('../models/Document');
 const Comparison = require('../models/Comparison');
 const { invalidateCache } = require('../middleware/cache');
 const { logAudit } = require('../services/auditService');
+const { trackAiUsage } = require('../services/usageTracker');
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -233,8 +234,11 @@ const compareDocuments = async (req, res) => {
       
       try {
         const { summarizeTextDiffAI } = require('../services/aiService');
-        const aiSummaryRes = await summarizeTextDiffAI(diffTextForAi);
-        comparisonResult.summary = aiSummaryRes.summary;
+        const aiResult = await summarizeTextDiffAI(diffTextForAi);
+        if (aiResult && aiResult.usage) {
+          await trackAiUsage(req.user._id, aiResult.usage);
+        }
+        comparisonResult.summary = aiResult.summary;
       } catch (err) {
         console.error("AI Text diff summary failed", err);
         comparisonResult.summary = "Standard text comparison performed because AI clause analysis was skipped.";
@@ -258,6 +262,10 @@ const compareDocuments = async (req, res) => {
         formatClausesForAI(docA.clauses),
         formatClausesForAI(docB.clauses)
       );
+
+      if (aiResult && aiResult.usage) {
+        await trackAiUsage(req.user._id, aiResult.usage);
+      }
 
       comparisonResult.changes = aiResult.comparisons.length;
       comparisonResult.clauseComparisons = aiResult.comparisons;
@@ -332,6 +340,10 @@ const explainClause = async (req, res) => {
     const { explainClauseAI } = require('../services/aiService');
     const aiResult = await explainClauseAI(text, type, riskLevel);
 
+    if (aiResult && aiResult.usage) {
+      await trackAiUsage(req.user._id, aiResult.usage);
+    }
+
     res.json(aiResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -402,6 +414,10 @@ const downloadDocumentReport = async (req, res) => {
       document.overallRiskScore,
       document.riskLevel
     );
+
+    if (aiResult && aiResult.usage) {
+      await trackAiUsage(req.user._id, aiResult.usage);
+    }
 
     document.fullAiReport = aiResult.report;
     await document.save();
@@ -605,8 +621,12 @@ const documentActionItems = async (req, res) => {
         end_index: c.endIndex,
       }))
     );
+    
+    if (aiResult && aiResult.usage) {
+      await trackAiUsage(req.user._id, aiResult.usage);
+    }
 
-    document.actionItems = aiResult;
+    document.actionItems = aiResult.action_items || aiResult.items || aiResult;
     await document.save();
 
     res.json(aiResult);

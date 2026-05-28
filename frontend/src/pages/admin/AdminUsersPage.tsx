@@ -119,11 +119,12 @@ function UserDrawer({ user, onClose, onStatusChange }: {
                     ) : activeTab === 'overview' ? (
                         <div className="p-4 space-y-6">
                             {/* Stats row */}
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {[
                                     { label: 'Documents', value: user.documentCount, icon: <FileText size={14} />, color: '#2563EB', bg: '#DBEAFE' },
                                     { label: 'Logins', value: user.loginCount, icon: <Activity size={14} />, color: '#059669', bg: '#D1FAE5' },
                                     { label: 'Failed', value: user.failedLoginAttempts, icon: <AlertTriangle size={14} />, color: '#D97706', bg: '#FEF3C7' },
+                                    { label: 'Tokens', value: user.aiUsage?.totalTokens?.toLocaleString() || 0, icon: <Activity size={14} />, color: '#7C3AED', bg: '#EDE9FE' },
                                 ].map(({ label, value, icon, color, bg }) => (
                                     <div key={label} className="rounded-xl p-4 text-center bg-white border border-[#E2E8F0] shadow-sm">
                                         <div className="flex justify-center mb-2">

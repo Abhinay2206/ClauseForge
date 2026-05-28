@@ -185,6 +185,12 @@ export interface AdminUser {
     failedLoginAttempts: number;
     suspendedReason: string | null;
     documentCount: number;
+    aiUsage?: {
+        calls: number;
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -239,7 +245,10 @@ export interface SystemHealth {
     mongodb: { connected: boolean; readyState: number };
     redis: { connected: boolean; pingMs: number | null };
     queue: { depth: number };
-    aiService: { healthy: boolean };
+    aiService: { 
+        healthy: boolean;
+        usage?: { totalCalls: number; totalTokens: number };
+    };
     server: {
         uptime: number;
         nodeVersion: string;
@@ -247,6 +256,17 @@ export interface SystemHealth {
         memoryMB: number;
     };
     checkedAt: string;
+}
+
+export interface DLQJob {
+    id: string;
+    name: string;
+    data: any;
+    timestamp: number;
+    processedOn?: number;
+    finishedOn?: number;
+    failedReason?: string;
+    state: string;
 }
 
 export interface RedisStats {

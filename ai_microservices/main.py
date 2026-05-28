@@ -124,8 +124,8 @@ async def compare_text(request: CompareTextRequest):
     Summarize standard text diff using LLaMA.
     """
     try:
-        summary = summarize_text_diff(request.diff_text)
-        return CompareTextResponse(summary=summary)
+        summary, usage = summarize_text_diff(request.diff_text)
+        return CompareTextResponse(summary=summary, usage=usage)
     except Exception as e:
         print(f"Text comparison error: {e}")
         raise HTTPException(
@@ -140,8 +140,8 @@ async def explain_clause(request: ExplainClauseRequest):
     Generate a simple clear explanation of a clause using LLaMA 3.
     """
     try:
-        explanation = explain_clause_with_llm(request.text, request.type, request.risk_level)
-        return ExplainClauseResponse(explanation=explanation)
+        explanation, usage = explain_clause_with_llm(request.text, request.type, request.risk_level)
+        return ExplainClauseResponse(explanation=explanation, usage=usage)
     except Exception as e:
         print(f"Explanation error: {e}")
         raise HTTPException(
@@ -156,8 +156,8 @@ async def explain_document(request: ExplainDocumentRequest):
     Generate a full document AI report.
     """
     try:
-        report = explain_document_with_llm(request.clauses, request.risk_score, request.risk_level)
-        return ExplainDocumentResponse(report=report)
+        report, usage = explain_document_with_llm(request.clauses, request.risk_score, request.risk_level)
+        return ExplainDocumentResponse(report=report, usage=usage)
     except Exception as e:
         print(f"Document explanation error: {e}")
         raise HTTPException(
@@ -190,8 +190,8 @@ async def chat_stream(request: Request):
 async def negotiate(request: NegotiationRequest):
     """Generate negotiation suggestions for clauses."""
     try:
-        suggestions = generate_negotiation_suggestions(request.clauses)
-        return NegotiationResponse(suggestions=suggestions)
+        suggestions, usage = generate_negotiation_suggestions(request.clauses)
+        return NegotiationResponse(suggestions=suggestions, usage=usage)
     except Exception as e:
         print(f"Negotiation error: {e}")
         raise HTTPException(
@@ -203,8 +203,8 @@ async def negotiate(request: NegotiationRequest):
 async def action_items(request: ActionItemsRequest):
     """Extract action items from clauses."""
     try:
-        items = extract_action_items(request.clauses)
-        return ActionItemsResponse(items=items)
+        action_items, usage = extract_action_items(request.clauses)
+        return ActionItemsResponse(action_items=action_items, usage=usage)
     except Exception as e:
         print(f"Action items error: {e}")
         raise HTTPException(

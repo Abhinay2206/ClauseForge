@@ -5,6 +5,7 @@ const { analyzeDocument } = require('./aiService');
 const { invalidateCache } = require('../middleware/cache');
 const { VirusDetectedError } = require('./virusScanner');
 const { enqueueEmail } = require('../queues/emailQueue');
+const { trackAiUsage } = require('./usageTracker');
 
 const connection = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -31,6 +32,11 @@ const initializeWorker = () => {
       // 3. Run AI clause detection + risk analysis via FastAPI
       console.log(`Starting AI analysis for document ${documentId}...`);
       const aiResults = await analyzeDocument(documentId);
+      
+      // Track AI token usage
+      if (aiResults.usage && document.user) {
+        await trackAiUsage(document.user._id || document.user.id, aiResults.usage);
+      }
 
       // 4. Store AI results in MongoDB and update status to completed
       await DocumentModel.findByIdAndUpdate(documentId, {
