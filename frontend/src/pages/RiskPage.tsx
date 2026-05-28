@@ -3,7 +3,7 @@ import { ShieldAlert, AlertTriangle, CheckCircle2, Info, ChevronDown, ChevronUp 
 import RiskBadge from '@/components/RiskBadge';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import DocumentSelector from '@/components/DocumentSelector';
-import { getAnalysis } from '@/services/documentService';
+import { getAnalysis, triggerAnalysis } from '@/services/documentService';
 import { getRiskColor, cn } from '@/utils/helpers';
 import { useDocumentStore } from '@/store/documentStore';
 import type { AnalysisResult, Document } from '@/types';
@@ -105,15 +105,32 @@ export default function RiskPage() {
 
     useEffect(() => {
         if (documents.length > 0 && !selectedDoc) {
-            setSelectedDoc(documents[0]);
+            const completed = documents.find(d => d.status === 'completed');
+            setSelectedDoc(completed || documents[0]);
         }
     }, [documents, selectedDoc]);
 
     useEffect(() => {
         if (selectedDoc) {
-            loadAnalysis(selectedDoc.id);
+            if (selectedDoc.status === 'unanalyzed') {
+                setAnalysis(null);
+                setIsLoading(false);
+            } else {
+                loadAnalysis(selectedDoc.id);
+            }
         }
-    }, [selectedDoc?.id, loadAnalysis]);
+    }, [selectedDoc?.id, selectedDoc?.status, loadAnalysis]);
+
+    const handleTriggerAnalysis = async () => {
+        if (!selectedDoc) return;
+        try {
+            const updatedDoc = await triggerAnalysis(selectedDoc.id);
+            setSelectedDoc(updatedDoc);
+            fetchDocuments();
+        } catch (e) {
+            alert('Failed to start analysis.');
+        }
+    };
 
     const handleDocSelect = (doc: Document) => {
         setSelectedDoc(doc);
@@ -139,7 +156,22 @@ export default function RiskPage() {
                 )}
             </div>
 
-            {isLoading ? (
+            {selectedDoc?.status === 'unanalyzed' ? (
+                <div className="cf-card p-12 text-center animate-fade-slide-up">
+                    <ShieldAlert size={32} className="mx-auto text-[#CBD5E1] mb-4" />
+                    <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Risk Analysis Skipped</h2>
+                    <p className="text-[14px] text-[#64748B] mb-6 max-w-md mx-auto">
+                        This document was uploaded without triggering AI analysis. 
+                        You can analyze it now to extract potential legal risks.
+                    </p>
+                    <button
+                        onClick={handleTriggerAnalysis}
+                        className="cf-btn cf-btn-primary mx-auto"
+                    >
+                        Analyze Now
+                    </button>
+                </div>
+            ) : isLoading ? (
                 <div className="space-y-4">
                     <div className="cf-card p-5 flex gap-5 items-center">
                         <div className="skeleton h-40 w-40 rounded-full shrink-0" />

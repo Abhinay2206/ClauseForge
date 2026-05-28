@@ -113,7 +113,43 @@ export default function ComparisonViewer({ comparison }: ComparisonViewerProps) 
                     </div>
                 ))}
 
-                {(!comparison.clauseComparisons || comparison.clauseComparisons.length === 0) && (
+
+                {/* Text Diff Fallback */}
+                {(!comparison.clauseComparisons || comparison.clauseComparisons.length === 0) && comparison.diffA?.length > 0 && (
+                    <div className="cf-card overflow-hidden animate-fade-slide-up">
+                        <div className="px-5 py-3 border-b border-[#F1F5F9] bg-white flex items-center justify-between">
+                            <p className="text-[13px] font-bold text-[#0F172A] flex items-center gap-2">
+                                Standard Text Comparison
+                            </p>
+                            <span className="cf-badge border px-2.5 py-1 bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]">
+                                <FileText size={14} className="text-[#94A3B8]" />
+                                <span className="capitalize font-semibold">Line by Line</span>
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#F1F5F9]">
+                            <div className="p-5 bg-[#FAFAFA] font-mono text-[12px] leading-relaxed break-words whitespace-pre-wrap">
+                                {comparison.diffA.map((part, i) => (
+                                    <span key={i} className={cn(
+                                        part.type === 'removed' ? 'bg-[#FECACA] text-[#DC2626] font-semibold' : 'text-[#334155]'
+                                    )}>
+                                        {part.text}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="p-5 bg-[#FAFAFA] font-mono text-[12px] leading-relaxed break-words whitespace-pre-wrap">
+                                {comparison.diffB.map((part, i) => (
+                                    <span key={i} className={cn(
+                                        part.type === 'added' ? 'bg-[#BBF7D0] text-[#16A34A] font-semibold' : 'text-[#334155]'
+                                    )}>
+                                        {part.text}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {(!comparison.clauseComparisons || comparison.clauseComparisons.length === 0) && (!comparison.diffA || comparison.diffA.length === 0) && (
                     <div className="cf-card p-10 text-center">
                         <ShieldAlert size={24} className="mx-auto text-[#CBD5E1] mb-3" />
                         <h3 className="text-[15px] font-semibold text-[#0F172A]">No Matching Clauses Found</h3>

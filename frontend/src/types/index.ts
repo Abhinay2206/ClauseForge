@@ -23,7 +23,7 @@ export interface Document {
     type: string;
     size: number;
     uploadedAt: string;
-    status: 'pending' | 'analyzing' | 'completed' | 'error';
+    status: 'pending' | 'analyzing' | 'completed' | 'error' | 'unanalyzed';
     riskScore?: number;
     riskLevel?: RiskLevel;
     content?: string;
@@ -194,7 +194,7 @@ export interface AdminDocument {
     name: string;
     type: string;
     size: number;
-    status: 'pending' | 'analyzing' | 'completed' | 'failed';
+    status: 'pending' | 'analyzing' | 'completed' | 'failed' | 'unanalyzed';
     riskLevel: RiskLevel | null;
     overallRiskScore: number | null;
     user: { _id: string; name: string; email: string; role: string } | null;

@@ -8,6 +8,7 @@ import {
     CheckCircle2,
     Clock,
     AlertTriangle,
+    HelpCircle,
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +40,7 @@ function getStatusIcon(status: string) {
     switch (status) {
         case 'completed': return <CheckCircle2 size={12} className="text-[#16A34A]" />;
         case 'analyzing': return <Clock size={12} className="text-[#2563EB] animate-spin-slow" />;
+        case 'unanalyzed':return <HelpCircle size={12} className="text-[#94A3B8]" />;
         case 'error':     return <AlertTriangle size={12} className="text-[#DC2626]" />;
         default:          return <Clock size={12} className="text-[#94A3B8]" />;
     }
@@ -78,6 +80,12 @@ export default function DocumentSelector({
     const filtered = query
         ? allDocs.filter((d) => d.name.toLowerCase().includes(query.toLowerCase()))
         : allDocs;
+
+    const sortedFiltered = [...filtered].sort((a, b) => {
+        if (a.status === 'unanalyzed' && b.status !== 'unanalyzed') return 1;
+        if (b.status === 'unanalyzed' && a.status !== 'unanalyzed') return -1;
+        return 0; // maintain default sorted order (which is by uploadedAt) otherwise
+    });
 
     const selected = allDocs.find((d) => d.id === selectedId);
 
@@ -235,7 +243,7 @@ export default function DocumentSelector({
                                         Recent Documents
                                     </p>
                                 )}
-                                {filtered.map((doc) => {
+                                {sortedFiltered.map((doc) => {
                                     const Icon = getDocIcon(doc.type);
                                     const isSelected = doc.id === selectedId;
                                     return (

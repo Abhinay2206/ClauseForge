@@ -64,7 +64,7 @@ const documentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'analyzing', 'completed', 'failed'],
+    enum: ['pending', 'analyzing', 'completed', 'failed', 'unanalyzed'],
     default: 'pending'
   },
   // AI Analysis Results

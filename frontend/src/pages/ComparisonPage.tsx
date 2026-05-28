@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { GitCompareArrows, X, Plus, Upload, ArrowLeftRight, FileType2, FileText, History, Clock } from 'lucide-react';
 import ComparisonViewer from '@/components/ComparisonViewer';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
-import { compareDocuments, getDocuments, getComparisonHistory, getComparisonById } from '@/services/documentService';
+import { compareDocuments, getDocuments, getComparisonHistory, getComparisonById, uploadDocument } from '@/services/documentService';
 import { cn } from '@/utils/helpers';
 import type { ComparisonResult, Document, ComparisonHistoryItem } from '@/types';
 
@@ -243,7 +243,7 @@ export default function ComparisonPage() {
         }
     }, [showHistory]);
 
-    const libraryDocs = documents.filter((d) => d.status === 'completed');
+    const libraryDocs = documents.filter((d) => d.status === 'completed' || d.status === 'unanalyzed');
 
     const handleCompare = async () => {
         if (!docA || !docB) return;
@@ -271,9 +271,22 @@ export default function ComparisonPage() {
         setIsLoading(false);
     };
 
-    const handleUploadSlot = (_file: File) => {
-        // In a real app: upload and add to doc list
-        // For now, no-op (mock)
+    const handleUploadSlot = async (file: File, isSlotA: boolean) => {
+        setIsLoading(true);
+        try {
+            const doc = await uploadDocument(file, undefined, true);
+            setDocuments(prev => [doc, ...prev]);
+            if (isSlotA) {
+                setDocA(doc);
+            } else {
+                setDocB(doc);
+            }
+        } catch (error) {
+            console.error('Failed to upload document for comparison', error);
+            alert('Failed to upload document. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const canCompare = !!(docA && docB && docA.id !== docB.id);
@@ -362,7 +375,7 @@ export default function ComparisonPage() {
                             selected={docA}
                             onSelect={setDocA}
                             onClear={() => setDocA(null)}
-                            onUpload={handleUploadSlot}
+                            onUpload={(f) => handleUploadSlot(f, true)}
                             libraryDocs={libraryDocs}
                         />
 
@@ -383,7 +396,7 @@ export default function ComparisonPage() {
                             selected={docB}
                             onSelect={setDocB}
                             onClear={() => setDocB(null)}
-                            onUpload={handleUploadSlot}
+                            onUpload={(f) => handleUploadSlot(f, false)}
                             libraryDocs={libraryDocs}
                         />
                     </div>

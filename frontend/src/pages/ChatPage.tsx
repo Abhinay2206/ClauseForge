@@ -5,6 +5,7 @@ import DocumentSelector from '@/components/DocumentSelector';
 import ChatTypingIndicator from '@/components/ChatTypingIndicator';
 import { useDocumentStore } from '@/store/documentStore';
 import type { ChatMessage } from '@/types';
+import { triggerAnalysis } from '@/services/documentService';
 import api from '@/services/api';
 import ReactMarkdown from 'react-markdown';
 
@@ -55,9 +56,22 @@ export default function ChatPage() {
 
     useEffect(() => {
         if (!selectedDocId && documents.length > 0) {
-            setSelectedDocId(documents[0].id);
+            const completed = documents.find(d => d.status === 'completed');
+            setSelectedDocId(completed ? completed.id : documents[0].id);
         }
     }, [documents, selectedDocId]);
+
+    const selectedDoc = documents.find(d => d.id === selectedDocId);
+
+    const handleTriggerAnalysis = async () => {
+        if (!selectedDocId) return;
+        try {
+            await triggerAnalysis(selectedDocId);
+            fetchDocuments();
+        } catch (e) {
+            alert('Failed to start analysis.');
+        }
+    };
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -340,89 +354,108 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            {/* Message list */}
-            <div className="flex-1 cf-card overflow-y-auto chat-scroll p-4 space-y-4 animate-fade-in min-h-0">
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={cn(
-                            'flex gap-3 animate-fade-slide-up',
-                            msg.role === 'user' ? 'justify-end' : 'justify-start'
-                        )}
+            {selectedDoc?.status === 'unanalyzed' ? (
+                <div className="flex-1 cf-card flex flex-col items-center justify-center p-12 text-center animate-fade-slide-up min-h-0">
+                    <Bot size={32} className="mx-auto text-[#CBD5E1] mb-4" />
+                    <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Assistant Unavailable</h2>
+                    <p className="text-[14px] text-[#64748B] mb-6 max-w-md mx-auto">
+                        This document was uploaded without triggering AI analysis. 
+                        You can analyze it now to enable the AI Assistant.
+                    </p>
+                    <button
+                        onClick={handleTriggerAnalysis}
+                        className="cf-btn cf-btn-primary mx-auto"
                     >
-                        {msg.role === 'assistant' && (
-                            <div className="h-8 w-8 rounded-xl bg-[#0F172A] flex items-center justify-center text-white shrink-0 mt-0.5">
-                                <Bot size={15} />
-                            </div>
-                        )}
-
-                        <div className={cn(
-                            'max-w-[75%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed',
-                            msg.role === 'user'
-                                ? 'bg-[#0F172A] text-white rounded-br-sm'
-                                : 'bg-[#F8FAFC] border border-[#E2E8F0] text-[#334155] rounded-bl-sm markdown-body'
-                        )}>
-                            {msg.role === 'user' ? (
-                                <div className="whitespace-pre-wrap">{msg.content}</div>
-                            ) : (
-                                <ReactMarkdown>
-                                    {msg.content}
-                                </ReactMarkdown>
-                            )}
-                        </div>
-
-                        {msg.role === 'user' && (
-                            <div className="h-8 w-8 rounded-xl bg-[#E2E8F0] flex items-center justify-center text-[#475569] shrink-0 mt-0.5">
-                                <User size={15} />
-                            </div>
-                        )}
-                    </div>
-                ))}
-
-                {/* Typing indicator */}
-                {isTyping && (
-                    <div className="flex gap-3 justify-start animate-fade-in mt-4">
-                        <ChatTypingIndicator phase={chatPhase} />
-                    </div>
-                )}
-                <div ref={bottomRef} />
-            </div>
-
-            {/* Suggestions */}
-            {messages.length <= 1 && (
-                <div className="flex flex-wrap gap-2 mt-3 shrink-0 animate-fade-in">
-                    {SUGGESTIONS.map((s) => (
-                        <button
-                            key={s.text}
-                            onClick={() => setInput(s.text)}
-                            className="flex items-center gap-1.5 rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-[12px] font-medium text-[#475569] hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-all"
-                        >
-                            <span>{s.icon}</span>
-                            {s.text}
-                        </button>
-                    ))}
+                        Analyze Now
+                    </button>
                 </div>
-            )}
+            ) : (
+                <>
+                    {/* Message list */}
+                    <div className="flex-1 cf-card overflow-y-auto chat-scroll p-4 space-y-4 animate-fade-in min-h-0">
+                        {messages.map((msg) => (
+                            <div
+                                key={msg.id}
+                                className={cn(
+                                    'flex gap-3 animate-fade-slide-up',
+                                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                                )}
+                            >
+                                {msg.role === 'assistant' && (
+                                    <div className="h-8 w-8 rounded-xl bg-[#0F172A] flex items-center justify-center text-white shrink-0 mt-0.5">
+                                        <Bot size={15} />
+                                    </div>
+                                )}
 
-            {/* Input */}
-            <div className="mt-3 cf-card flex items-center gap-3 px-4 py-3 shrink-0">
-                <Sparkles size={15} className="text-[#CBD5E1] shrink-0" />
-                <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask anything about this document…"
-                    className="flex-1 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent outline-none"
-                />
-                <button
-                    id="chat-send-btn"
-                    onClick={handleSend}
-                    disabled={!input.trim() || isTyping}
-                    className="cf-btn cf-btn-primary p-2.5 h-auto disabled:opacity-40"
-                >
-                    <Send size={15} />
-                </button>
-            </div>
+                                <div className={cn(
+                                    'max-w-[75%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed',
+                                    msg.role === 'user'
+                                        ? 'bg-[#0F172A] text-white rounded-br-sm'
+                                        : 'bg-[#F8FAFC] border border-[#E2E8F0] text-[#334155] rounded-bl-sm markdown-body'
+                                )}>
+                                    {msg.role === 'user' ? (
+                                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                                    ) : (
+                                        <ReactMarkdown>
+                                            {msg.content}
+                                        </ReactMarkdown>
+                                    )}
+                                </div>
+
+                                {msg.role === 'user' && (
+                                    <div className="h-8 w-8 rounded-xl bg-[#E2E8F0] flex items-center justify-center text-[#475569] shrink-0 mt-0.5">
+                                        <User size={15} />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                        {/* Typing indicator */}
+                        {isTyping && (
+                            <div className="flex gap-3 justify-start animate-fade-in mt-4">
+                                <ChatTypingIndicator phase={chatPhase} />
+                            </div>
+                        )}
+                        <div ref={bottomRef} />
+                    </div>
+
+                    {/* Suggestions */}
+                    {messages.length <= 1 && (
+                        <div className="flex flex-wrap gap-2 mt-3 shrink-0 animate-fade-in">
+                            {SUGGESTIONS.map((s) => (
+                                <button
+                                    key={s.text}
+                                    onClick={() => setInput(s.text)}
+                                    className="flex items-center gap-1.5 rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-[12px] font-medium text-[#475569] hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-all"
+                                >
+                                    <span>{s.icon}</span>
+                                    {s.text}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Input */}
+                    <div className="mt-3 cf-card flex items-center gap-3 px-4 py-3 shrink-0">
+                        <Sparkles size={15} className="text-[#CBD5E1] shrink-0" />
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Ask anything about this document…"
+                            className="flex-1 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent outline-none"
+                        />
+                        <button
+                            id="chat-send-btn"
+                            onClick={handleSend}
+                            disabled={!input.trim() || isTyping}
+                            className="cf-btn cf-btn-primary p-2.5 h-auto disabled:opacity-40"
+                        >
+                            <Send size={15} />
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

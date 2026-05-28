@@ -3,29 +3,29 @@ import { FileSearch, ChevronRight, Copy, Check, BookOpen, Download, Loader2 } fr
 import RiskBadge from '@/components/RiskBadge';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import DocumentSelector from '@/components/DocumentSelector';
-import { getAnalysis, explainClause, generateDocumentReport } from '@/services/documentService';
+import { getAnalysis, explainClause, generateDocumentReport, triggerAnalysis } from '@/services/documentService';
 import { formatClauseType, getRiskColor, cn } from '@/utils/helpers';
 import { useDocumentStore } from '@/store/documentStore';
 import type { AnalysisResult, Clause, Document } from '@/types';
 
 const CLAUSE_TYPE_ICONS: Record<string, string> = {
-    'Terminations':          '⚖️',
-    'Liability':             '🛡️',
-    'Indemnifications':      '🔐',
-    'Confidentiality':       '🔒',
-    'Non-Compete':           '🚫',
-    'Payments':              '💳',
+    'Terminations': '⚖️',
+    'Liability': '🛡️',
+    'Indemnifications': '🔐',
+    'Confidentiality': '🔒',
+    'Non-Compete': '🚫',
+    'Payments': '💳',
     'Intellectual Property': '💡',
-    'Governing Laws':        '🏛️',
-    'Force Majeure':         '⚡',
-    'Dispute Resolution':    '🤝',
-    'Arbitration':           '⚖️',
-    'Warranties':            '🛡️',
-    'Assigns':               '📝',
-    'Amendments':            '✍️',
-    'Notices':               '📬',
-    'Representations':       '🗣️',
-    'Compliance With Laws':  '📚',
+    'Governing Laws': '🏛️',
+    'Force Majeure': '⚡',
+    'Dispute Resolution': '🤝',
+    'Arbitration': '⚖️',
+    'Warranties': '🛡️',
+    'Assigns': '📝',
+    'Amendments': '✍️',
+    'Notices': '📬',
+    'Representations': '🗣️',
+    'Compliance With Laws': '📚',
 };
 
 const DOC_TEXT = `MASTER SERVICE AGREEMENT
@@ -86,15 +86,32 @@ export default function AnalysisPage() {
 
     useEffect(() => {
         if (documents.length > 0 && !selectedDoc) {
-            setSelectedDoc(documents[0]);
+            const completed = documents.find(d => d.status === 'completed');
+            setSelectedDoc(completed || documents[0]);
         }
     }, [documents, selectedDoc]);
 
     useEffect(() => {
         if (selectedDoc) {
-            loadAnalysis(selectedDoc.id);
+            if (selectedDoc.status === 'unanalyzed') {
+                setAnalysis(null);
+                setIsLoading(false);
+            } else {
+                loadAnalysis(selectedDoc.id);
+            }
         }
-    }, [selectedDoc?.id, loadAnalysis]);
+    }, [selectedDoc?.id, selectedDoc?.status, loadAnalysis]);
+
+    const handleTriggerAnalysis = async () => {
+        if (!selectedDoc) return;
+        try {
+            const updatedDoc = await triggerAnalysis(selectedDoc.id);
+            setSelectedDoc(updatedDoc);
+            fetchDocuments();
+        } catch (e) {
+            alert('Failed to start analysis.');
+        }
+    };
 
     const handleDocSelect = (doc: Document) => {
         setSelectedDoc(doc);
@@ -145,18 +162,18 @@ export default function AnalysisPage() {
         if (!analysis || !analysis.clauses?.length) {
             return DOC_TEXT; // fallback
         }
-        
+
         // Build the text from the chunks that the clauses refer to, or just display clauses since we don't have the full text assembled yet.
         // For simplicity in this UI, we can just join all clause texts if we don't have the full original text.
         // Or if we want to display properly, we should use the assembled full text. But we only have `totalChunks`.
         // Let's just render the clauses as a stream of text for now, separated by double newlines, 
         // as the RAG chunks cover the whole document.
-        
+
         const parts: { text: string; clause?: Clause }[] = [];
-        
+
         // Sort clauses by start index
         const sorted = [...(analysis.clauses || [])].sort((a, b) => a.startIndex - b.startIndex);
-        
+
         sorted.forEach((clause) => {
             parts.push({ text: clause.text, clause });
             parts.push({ text: '\n\n' }); // separation
@@ -167,9 +184,9 @@ export default function AnalysisPage() {
                 const colors = getRiskColor(part.clause.riskLevel);
                 const isSelected = selectedClause?.id === part.clause.id;
                 const underlineColor =
-                    part.clause.riskLevel === 'high'   ? 'border-[#DC2626]' :
-                    part.clause.riskLevel === 'medium' ? 'border-[#D97706]' :
-                    'border-[#16A34A]';
+                    part.clause.riskLevel === 'high' ? 'border-[#DC2626]' :
+                        part.clause.riskLevel === 'medium' ? 'border-[#D97706]' :
+                            'border-[#16A34A]';
                 return (
                     <span
                         key={i}
@@ -217,7 +234,22 @@ export default function AnalysisPage() {
                 )}
             </div>
 
-            {isLoading ? (
+            {selectedDoc?.status === 'unanalyzed' ? (
+                <div className="cf-card p-12 text-center animate-fade-slide-up">
+                    <FileSearch size={32} className="mx-auto text-[#CBD5E1] mb-4" />
+                    <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Analysis Skipped</h2>
+                    <p className="text-[14px] text-[#64748B] mb-6 max-w-md mx-auto">
+                        This document was uploaded without triggering AI analysis.
+                        You can analyze it now to extract clauses, risks, and insights.
+                    </p>
+                    <button
+                        onClick={handleTriggerAnalysis}
+                        className="cf-btn cf-btn-primary mx-auto"
+                    >
+                        Analyze Now
+                    </button>
+                </div>
+            ) : isLoading ? (
                 <div className="grid gap-4 lg:grid-cols-3">
                     <div className="lg:col-span-2"><LoadingSkeleton lines={22} /></div>
                     <div className="space-y-4">
@@ -328,7 +360,7 @@ export default function AnalysisPage() {
                                             )}
                                         </p>
                                     </div>
-                                    
+
                                     {/* Confidence Scores */}
                                     <div className="pt-2 border-t border-[#E2E8F0] flex gap-4 mt-2">
                                         <div>

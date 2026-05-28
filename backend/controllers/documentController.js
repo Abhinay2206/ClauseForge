@@ -1,4 +1,5 @@
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const pdf = require('pdf-parse');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
 const Document = require('../models/Document');
@@ -47,7 +48,7 @@ const getUploadUrl = async (req, res) => {
 // @access  Private
 const registerDocument = async (req, res) => {
   try {
-    const { name, s3Key, type, size } = req.body;
+    const { name, s3Key, type, size, skipAnalysis } = req.body;
 
     const document = await Document.create({
       user: req.user._id,
@@ -55,12 +56,14 @@ const registerDocument = async (req, res) => {
       s3Key,
       type,
       size,
-      status: 'pending'
+      status: skipAnalysis ? 'unanalyzed' : 'pending' // if skipAnalysis, mark as unanalyzed
     });
 
-    // Enqueue document for RAG processing
-    const { enqueueDocumentProcessing } = require('../queues/documentQueue');
-    await enqueueDocumentProcessing(document._id);
+    if (!skipAnalysis) {
+      // Enqueue document for RAG processing
+      const { enqueueDocumentProcessing } = require('../queues/documentQueue');
+      await enqueueDocumentProcessing(document._id);
+    }
 
     // Invalidate document cache
     await invalidateCache(req.user._id);
@@ -145,7 +148,7 @@ const getDocumentAnalysis = async (req, res) => {
 const compareDocuments = async (req, res) => {
   try {
     const { idA, idB } = req.params;
-    
+
     if (idA === idB) {
       return res.status(400).json({ message: 'Cannot compare a document with itself' });
     }
@@ -157,12 +160,74 @@ const compareDocuments = async (req, res) => {
       return res.status(404).json({ message: 'One or both documents not found' });
     }
 
-    if (docA.status !== 'completed' || docB.status !== 'completed') {
-      return res.status(400).json({ message: 'Both documents must be fully analyzed before comparison' });
+    if (!['completed', 'unanalyzed'].includes(docA.status) || !['completed', 'unanalyzed'].includes(docB.status)) {
+      return res.status(400).json({ message: 'Both documents must be ready before comparison' });
     }
 
     const { compareDocumentsAI } = require('../services/aiService');
-    
+    const Diff = require('diff');
+
+    let comparisonResult = {
+      documentA: { id: docA._id, name: docA.name },
+      documentB: { id: docB._id, name: docB.name },
+      similarity: 0,
+      changes: 0,
+      clauseComparisons: [],
+      summary: '',
+      diffA: [],
+      diffB: []
+    };
+
+    if (docA.clauses.length === 0 || docB.clauses.length === 0) {
+      // Fallback: One or both documents skipped AI analysis. Perform Standard Text Diff.
+      const fetchText = async (doc) => {
+        const cmd = new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: doc.s3Key });
+        const res = await s3Client.send(cmd);
+        const streamToBuffer = async (stream) => new Promise((resolve, reject) => {
+          const chunks = [];
+          stream.on('data', (c) => chunks.push(c));
+          stream.on('error', reject);
+          stream.on('end', () => resolve(Buffer.concat(chunks)));
+        });
+        const buf = await streamToBuffer(res.Body);
+        return doc.type === 'application/pdf' ? (await pdf(buf)).text : buf.toString('utf8');
+      };
+
+      const textA = await fetchText(docA);
+      const textB = await fetchText(docB);
+
+      const diff = Diff.diffLines(textA, textB);
+      
+      let similarityScore = 100;
+      let changesCount = 0;
+      let totalLines = 0;
+
+      diff.forEach(part => {
+        const lines = part.count || 1;
+        totalLines += lines;
+        const type = part.added ? 'added' : part.removed ? 'removed' : 'unchanged';
+        
+        if (type !== 'unchanged') {
+          changesCount++;
+        }
+
+        const segment = { text: part.value, type };
+        if (part.added) {
+          comparisonResult.diffB.push(segment);
+        } else if (part.removed) {
+          comparisonResult.diffA.push(segment);
+        } else {
+          comparisonResult.diffA.push(segment);
+          comparisonResult.diffB.push(segment);
+        }
+      });
+
+      comparisonResult.changes = changesCount;
+      comparisonResult.similarity = totalLines > 0 ? Math.max(0, 100 - Math.round((changesCount / totalLines) * 100)) : 100;
+      comparisonResult.summary = "Standard text comparison performed because AI clause analysis was skipped.";
+    } else {
+      // Normal AI clause comparison
+
     const formatClausesForAI = (clauses) => clauses.map(c => ({
       id: c.clauseId,
       text: c.text,
@@ -175,30 +240,24 @@ const compareDocuments = async (req, res) => {
       end_index: c.endIndex,
     }));
 
-    const aiResult = await compareDocumentsAI(
-      formatClausesForAI(docA.clauses),
-      formatClausesForAI(docB.clauses)
-    );
+      const aiResult = await compareDocumentsAI(
+        formatClausesForAI(docA.clauses),
+        formatClausesForAI(docB.clauses)
+      );
 
-    const comparisonResult = {
-      documentA: { id: docA._id, name: docA.name },
-      documentB: { id: docB._id, name: docB.name },
-      similarity: 0, // Not calculated exactly like text diff, maybe 0 for now or derive from AI
-      changes: aiResult.comparisons.length, 
-      clauseComparisons: aiResult.comparisons,
-      summary: aiResult.summary,
-      diffA: [], // Keeping empty to not break frontend before it updates
-      diffB: []
-    };
+      comparisonResult.changes = aiResult.comparisons.length;
+      comparisonResult.clauseComparisons = aiResult.comparisons;
+      comparisonResult.summary = aiResult.summary;
 
-    // Calculate a pseudo similarity score based on similar vs conflicting
-    let similarCount = 0;
-    aiResult.comparisons.forEach(c => {
-      if (c.relationship === 'similar') similarCount++;
-    });
-    comparisonResult.similarity = aiResult.comparisons.length > 0 
-      ? Math.round((similarCount / aiResult.comparisons.length) * 100)
-      : 100;
+      // Calculate a pseudo similarity score based on similar vs conflicting
+      let similarCount = 0;
+      aiResult.comparisons.forEach(c => {
+        if (c.relationship === 'similar') similarCount++;
+      });
+      comparisonResult.similarity = aiResult.comparisons.length > 0
+        ? Math.round((similarCount / aiResult.comparisons.length) * 100)
+        : 100;
+    }
 
     const savedComparison = await Comparison.create({
       user: req.user._id,
@@ -217,7 +276,7 @@ const compareDocuments = async (req, res) => {
 const getComparisons = async (req, res) => {
   try {
     const comparisons = await Comparison.find({ user: req.user._id })
-      .select('-clauseComparisons')
+      .select('-clauseComparisons -diffA -diffB')
       .sort('-createdAt');
     res.json(comparisons);
   } catch (error) {
@@ -251,7 +310,7 @@ const getComparisonById = async (req, res) => {
 const explainClause = async (req, res) => {
   try {
     const { text, type, riskLevel } = req.body;
-    
+
     if (!text || !type || !riskLevel) {
       return res.status(400).json({ message: 'Text, type, and riskLevel are required' });
     }
@@ -338,7 +397,7 @@ const downloadDocumentReport = async (req, res) => {
     // Audit Log
     await logAudit(req.user._id, 'report_download', 'Document', req, { documentId: document._id });
 
-    res.json({ 
+    res.json({
       report: aiResult.report,
       documentName: document.name,
       clauseAnalysis: reportData.clauseAnalysis,
@@ -365,7 +424,7 @@ const getDocumentReport = async (req, res) => {
 
     const reportData = buildReportData(document);
 
-    res.json({ 
+    res.json({
       report: document.fullAiReport,
       documentName: document.name,
       clauseAnalysis: reportData.clauseAnalysis,
@@ -417,6 +476,80 @@ const negotiateDocument = async (req, res) => {
     await document.save();
 
     res.json(aiResult);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get negotiated document text
+// @route   GET /api/documents/:id/negotiated-text
+// @access  Private
+const getNegotiatedText = async (req, res) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    if (document.status !== 'completed') {
+      return res.status(400).json({ message: 'Document analysis is not yet complete' });
+    }
+
+    // Fetch original document from S3
+    const getObjectCommand = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: document.s3Key,
+    });
+    const s3Response = await s3Client.send(getObjectCommand);
+
+    // Stream to buffer
+    const streamToBuffer = async (stream) => {
+      return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+    };
+    const fileBuffer = await streamToBuffer(s3Response.Body);
+
+    let rawText = '';
+    if (document.type === 'application/pdf') {
+      const pdfData = await pdf(fileBuffer);
+      rawText = pdfData.text;
+    } else {
+      rawText = fileBuffer.toString('utf8');
+    }
+
+    // Apply negotiation replacements
+    if (document.negotiationSuggestions && document.negotiationSuggestions.suggestions) {
+      document.negotiationSuggestions.suggestions.forEach(suggestion => {
+        if (suggestion.original_text && suggestion.suggested_text) {
+          // Escape special regex characters
+          const escapeRegExp = (string) => {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          };
+
+          let escapedOriginal = escapeRegExp(suggestion.original_text.trim());
+          // Allow any amount of whitespace (including newlines) to match
+          escapedOriginal = escapedOriginal.replace(/\s+/g, '\\s+');
+
+          try {
+            const regex = new RegExp(escapedOriginal, 'g');
+            rawText = rawText.replace(regex, `\n${suggestion.suggested_text}\n`);
+          } catch (e) {
+            // Fallback to strict string replace if regex fails
+            rawText = rawText.split(suggestion.original_text).join(suggestion.suggested_text);
+          }
+        }
+      });
+    }
+
+    res.json({ text: rawText });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -522,6 +655,41 @@ const deleteDocument = async (req, res) => {
   }
 };
 
+// @desc    Trigger AI Analysis for an unanalyzed document
+// @route   POST /api/documents/:id/analyze
+// @access  Private
+const triggerAnalysis = async (req, res) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    if (document.status !== 'unanalyzed') {
+      return res.status(400).json({ message: 'Only unanalyzed documents can be manually triggered for analysis' });
+    }
+
+    // Update status to pending
+    document.status = 'pending';
+    await document.save();
+
+    // Enqueue document for RAG processing
+    const { enqueueDocumentProcessing } = require('../queues/documentQueue');
+    await enqueueDocumentProcessing(document._id);
+
+    // Invalidate document cache
+    await invalidateCache(req.user._id);
+
+    res.json(document);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUploadUrl,
   registerDocument,
@@ -536,5 +704,7 @@ module.exports = {
   getAllActionItems,
   deleteDocument,
   getComparisons,
-  getComparisonById
+  getComparisonById,
+  getNegotiatedText,
+  triggerAnalysis
 };

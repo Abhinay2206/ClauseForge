@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Download, FileText, Sparkles, Loader2, ShieldAlert, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import DocumentSelector from '@/components/DocumentSelector';
-import { getReport, generateDocumentReport } from '@/services/documentService';
+import { getReport, generateDocumentReport, triggerAnalysis } from '@/services/documentService';
 import { formatClauseType, formatDate, cn } from '@/utils/helpers';
 import { useDocumentStore } from '@/store/documentStore';
 import type { Report, Document } from '@/types';
@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import { useReactToPrint } from 'react-to-print';
 
 export default function ReportPage() {
-    const { documents } = useDocumentStore();
+    const { documents, fetchDocuments } = useDocumentStore();
     const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
     const [report, setReport] = useState<Report | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -31,15 +31,32 @@ export default function ReportPage() {
 
     useEffect(() => {
         if (!selectedDoc && documents.length > 0) {
-            setSelectedDoc(documents[0]);
+            const completed = documents.find(d => d.status === 'completed');
+            setSelectedDoc(completed || documents[0]);
         }
     }, [documents, selectedDoc]);
 
     useEffect(() => {
         if (selectedDoc) {
-            loadReport(selectedDoc.id);
+            if (selectedDoc.status === 'unanalyzed') {
+                setReport(null);
+                setIsLoading(false);
+            } else {
+                loadReport(selectedDoc.id);
+            }
         }
-    }, [selectedDoc, loadReport]);
+    }, [selectedDoc?.id, selectedDoc?.status, loadReport]);
+
+    const handleTriggerAnalysis = async () => {
+        if (!selectedDoc) return;
+        try {
+            const updatedDoc = await triggerAnalysis(selectedDoc.id);
+            setSelectedDoc(updatedDoc);
+            fetchDocuments();
+        } catch (e) {
+            alert('Failed to start analysis.');
+        }
+    };
 
     const handleGenerate = async () => {
         if (!selectedDoc) return;
@@ -88,6 +105,21 @@ export default function ReportPage() {
             {!selectedDoc ? (
                 <div className="cf-card p-12 text-center text-gray-500 mt-6 animate-fade-slide-up">
                     Please upload or select a document to view its report.
+                </div>
+            ) : selectedDoc.status === 'unanalyzed' ? (
+                <div className="mt-6 cf-card p-12 text-center animate-fade-slide-up">
+                    <FileText size={32} className="mx-auto text-[#CBD5E1] mb-4" />
+                    <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Analysis Skipped</h2>
+                    <p className="text-[14px] text-[#64748B] mb-6 max-w-md mx-auto">
+                        This document was uploaded without triggering AI analysis. 
+                        You can analyze it now to generate a comprehensive report.
+                    </p>
+                    <button
+                        onClick={handleTriggerAnalysis}
+                        className="cf-btn cf-btn-primary mx-auto"
+                    >
+                        Analyze Now
+                    </button>
                 </div>
             ) : isLoading ? (
                 <div className="space-y-4 mt-6">

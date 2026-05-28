@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { CheckSquare, ListTodo, Loader2, Calendar } from 'lucide-react';
 import DocumentSelector from '@/components/DocumentSelector';
-import { getActionItems } from '@/services/documentService';
+import { getActionItems, triggerAnalysis } from '@/services/documentService';
 import { useDocumentStore } from '@/store/documentStore';
 import type { Document, ActionItem } from '@/types';
 import { cn } from '@/utils/helpers';
@@ -21,7 +21,8 @@ export default function ActionItemsPage() {
 
     useEffect(() => {
         if (documents.length > 0 && !selectedDoc) {
-            setSelectedDoc(documents[0]);
+            const completed = documents.find(d => d.status === 'completed');
+            setSelectedDoc(completed || documents[0]);
         }
     }, [documents, selectedDoc]);
 
@@ -43,9 +44,26 @@ export default function ActionItemsPage() {
 
     useEffect(() => {
         if (selectedDoc) {
-            loadActionItems(selectedDoc.id);
+            if (selectedDoc.status === 'unanalyzed') {
+                setItems([]);
+                setCompletedItems(new Set());
+                setIsLoading(false);
+            } else {
+                loadActionItems(selectedDoc.id);
+            }
         }
-    }, [selectedDoc?.id, loadActionItems]);
+    }, [selectedDoc?.id, selectedDoc?.status, loadActionItems]);
+
+    const handleTriggerAnalysis = async () => {
+        if (!selectedDoc) return;
+        try {
+            const updatedDoc = await triggerAnalysis(selectedDoc.id);
+            setSelectedDoc(updatedDoc);
+            fetchDocuments();
+        } catch (e) {
+            alert('Failed to start analysis.');
+        }
+    };
 
     const handleDocSelect = (doc: Document) => {
         setSelectedDoc(doc);
@@ -81,7 +99,22 @@ export default function ActionItemsPage() {
                 </div>
             </div>
 
-            {isLoading ? (
+            {selectedDoc?.status === 'unanalyzed' ? (
+                <div className="mt-6 cf-card p-12 text-center animate-fade-slide-up">
+                    <ListTodo size={32} className="mx-auto text-[#CBD5E1] mb-4" />
+                    <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Action Items Skipped</h2>
+                    <p className="text-[14px] text-[#64748B] mb-6 max-w-md mx-auto">
+                        This document was uploaded without triggering AI analysis. 
+                        You can analyze it now to extract workflows and deadlines.
+                    </p>
+                    <button
+                        onClick={handleTriggerAnalysis}
+                        className="cf-btn cf-btn-primary mx-auto"
+                    >
+                        Analyze Now
+                    </button>
+                </div>
+            ) : isLoading ? (
                 <div className="mt-6 flex flex-col items-center justify-center p-5 cf-card">
                     <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-4" />
                     <p className="text-[#475569] font-medium text-sm">Extracting actionable items from document...</p>

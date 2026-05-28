@@ -34,7 +34,8 @@ export async function deleteDocument(id: string): Promise<void> {
 
 export async function uploadDocument(
     file: File,
-    onProgress?: (percent: number) => void
+    onProgress?: (percent: number) => void,
+    skipAnalysis?: boolean
 ): Promise<Document> {
     try {
         // 1. Get presigned URL from backend
@@ -59,15 +60,16 @@ export async function uploadDocument(
             }
         });
 
-        // 3. Register document in backend
-        const response = await api.post('/api/documents', {
+        // 3. Register with backend
+        const { data: registeredDoc } = await api.post('/api/documents', {
             name: file.name,
             s3Key: key,
             type: file.type,
-            size: file.size
+            size: file.size,
+            skipAnalysis
         });
 
-        const doc = response.data;
+        const doc = registeredDoc;
         return {
             id: doc._id,
             name: doc.name,
@@ -139,6 +141,25 @@ export async function explainClause(text: string, type: string, riskLevel: strin
     }
 }
 
+export async function triggerAnalysis(id: string): Promise<Document> {
+    try {
+        const { data } = await api.post(`/api/documents/${id}/analyze`);
+        return {
+            id: data._id,
+            name: data.name,
+            type: data.type,
+            size: data.size,
+            uploadedAt: data.createdAt,
+            status: data.status,
+            riskScore: data.overallRiskScore,
+            riskLevel: data.riskLevel
+        };
+    } catch (error) {
+        console.error('Failed to trigger analysis:', error);
+        throw error;
+    }
+}
+
 export async function generateDocumentReport(documentId: string): Promise<Report> {
     try {
         const { data } = await api.post(`/api/documents/${documentId}/report`);
@@ -199,6 +220,16 @@ export async function getReport(documentId: string): Promise<Report> {
         };
     } catch (error) {
         console.error('Failed to fetch report:', error);
+        throw error;
+    }
+}
+
+export async function getNegotiatedText(id: string): Promise<string> {
+    try {
+        const { data } = await api.get(`/api/documents/${id}/negotiated-text`);
+        return data.text;
+    } catch (error) {
+        console.error('Failed to fetch negotiated text:', error);
         throw error;
     }
 }

@@ -60,6 +60,14 @@ const comparisonSchema = new mongoose.Schema({
   clauseComparisons: {
     type: [clauseComparisonSchema],
     default: []
+  },
+  diffA: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
+  diffB: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
   }
 }, { timestamps: true });
 

@@ -22,6 +22,7 @@ const STATUS_STYLES: Record<string, { icon: React.ReactNode; color: string; bg: 
     analyzing: { icon: <Clock size={12} />, color: '#2563EB', bg: '#DBEAFE', label: 'Analyzing' },
     pending:   { icon: <Clock size={12} />, color: '#D97706', bg: '#FEF3C7', label: 'Pending' },
     failed:    { icon: <XCircle size={12} />, color: '#DC2626', bg: '#FEE2E2', label: 'Failed' },
+    unanalyzed:{ icon: <Clock size={12} />, color: '#94A3B8', bg: '#F1F5F9', label: 'Unanalyzed' },
 };
 
 const RISK_STYLES: Record<string, { color: string; bg: string; border: string }> = {
@@ -117,7 +118,7 @@ export default function AdminDocumentsPage() {
         setDeleting(false);
     };
 
-    const statusCounts = { completed: 0, analyzing: 0, pending: 0, failed: 0 };
+    const statusCounts: Record<string, number> = { completed: 0, analyzing: 0, pending: 0, failed: 0, unanalyzed: 0 };
     documents.forEach(d => { if (statusCounts[d.status] !== undefined) statusCounts[d.status]++; });
 
     return (
