@@ -11,6 +11,7 @@ interface DocumentStore {
     setCurrentAnalysis: (analysis: AnalysisResult | null) => void;
     fetchAnalysis: (documentId: string) => Promise<void>;
     addDocument: (doc: Document) => void;
+    removeDocument: (id: string) => Promise<void>;
 }
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
@@ -43,4 +44,17 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
     addDocument: (doc) =>
         set((state) => ({ documents: [doc, ...state.documents] })),
+
+    removeDocument: async (id: string) => {
+        try {
+            await documentService.deleteDocument(id);
+            set((state) => ({
+                documents: state.documents.filter((d) => d.id !== id),
+                currentAnalysis: state.currentAnalysis?.documentId === id ? null : state.currentAnalysis
+            }));
+        } catch (error) {
+            console.error('Failed to remove document', error);
+            throw error;
+        }
+    },
 }));

@@ -32,7 +32,9 @@
     "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.4.2",
+    "mjml": "^5.3.0",
     "mongoose": "^9.6.2",
+    "nodemailer": "^8.0.9",
     "pdf-parse": "^1.1.1",
     "rate-limit-redis": "^5.0.0"
   },

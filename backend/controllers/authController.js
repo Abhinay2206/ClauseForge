@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { logAudit } = require('../services/auditService');
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
+const { enqueueEmail } = require('../queues/emailQueue');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID');
 
@@ -41,6 +42,7 @@ const registerUser = async (req, res) => {
         sameSite: 'lax',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
       });
+      
       res.status(201).json({
         _id: user._id,
         name: user.name,
@@ -51,6 +53,15 @@ const registerUser = async (req, res) => {
 
       // Audit Log
       await logAudit(user._id, 'signup', 'UserAccount', req);
+      
+      // Send welcome email
+      if (user.emailPreferences?.marketing !== false) {
+        await enqueueEmail('welcome', user.email, 'Welcome to ClauseForge', {
+          name: user.name,
+          dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+          userId: user._id
+        });
+      }
 
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -209,6 +220,15 @@ const googleLogin = async (req, res) => {
         password: '', // will be ignored or bypassed due to schema update
       });
       await logAudit(user._id, 'signup', 'UserAccount', req, { method: 'google' });
+      
+      // Send welcome email
+      if (user.emailPreferences?.marketing !== false) {
+        await enqueueEmail('welcome', user.email, 'Welcome to ClauseForge', {
+          name: user.name,
+          dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+          userId: user._id
+        });
+      }
     }
 
     const token = generateToken(user._id);

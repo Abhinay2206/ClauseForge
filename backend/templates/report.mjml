@@ -1,0 +1,49 @@
+<!-- Partial for Report Email, injected into base.mjml {{{content}}} -->
+<mj-section background-color="#1D4ED8" padding="40px 30px">
+  <mj-column>
+    <mj-text font-size="24px" font-weight="700" color="#ffffff" line-height="32px">
+      Analysis Complete
+    </mj-text>
+    <mj-text font-size="16px" color="#DBEAFE" line-height="24px" padding-top="10px">
+      Your document "{{documentName}}" has been fully analyzed by ClauseForge AI.
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section padding="30px">
+  <mj-column>
+    <mj-text font-weight="600" font-size="18px" color="#0F172A">
+      Executive Summary
+    </mj-text>
+    <mj-text padding-top="10px" color="#475569">
+      {{summary}}
+    </mj-text>
+
+    <mj-spacer height="25px" />
+
+    <mj-text font-weight="600" font-size="18px" color="#0F172A">
+      Key Metrics
+    </mj-text>
+    
+    <mj-table padding-top="15px">
+      <tr style="border-bottom:1px solid #E2E8F0;text-align:left;padding:10px 0;">
+        <th style="padding: 10px; color:#64748B; font-weight:500;">Risk Score</th>
+        <td style="padding: 10px; font-weight:600; color:{{riskColor}};">{{riskScore}}/100</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E2E8F0;text-align:left;padding:10px 0;">
+        <th style="padding: 10px; color:#64748B; font-weight:500;">Clauses Analyzed</th>
+        <td style="padding: 10px; font-weight:600;">{{clauseCount}}</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E2E8F0;text-align:left;padding:10px 0;">
+        <th style="padding: 10px; color:#64748B; font-weight:500;">Critical Issues</th>
+        <td style="padding: 10px; font-weight:600; color:#EF4444;">{{criticalCount}}</td>
+      </tr>
+    </mj-table>
+
+    <mj-spacer height="30px" />
+    
+    <mj-button background-color="#2563EB" color="white" font-weight="600" border-radius="8px" href="{{reportUrl}}" width="100%">
+      View Full Report
+    </mj-button>
+  </mj-column>
+</mj-section>

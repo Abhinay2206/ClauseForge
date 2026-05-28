@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'moderator', 'support'],
     default: 'user'
   },
+  emailPreferences: {
+    marketing: { type: Boolean, default: true },
+    reports: { type: Boolean, default: true },
+    alerts: { type: Boolean, default: true }
+  },
   status: {
     type: String,
     enum: ['active', 'suspended', 'blocked'],

@@ -1,0 +1,31 @@
+<!-- Partial for Alert Email, injected into base.mjml {{{content}}} -->
+<mj-section background-color="#EF4444" padding="30px">
+  <mj-column>
+    <mj-text font-size="20px" font-weight="700" color="#ffffff" line-height="28px" align="center">
+      Security Alert
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section padding="30px">
+  <mj-column>
+    <mj-text font-weight="600" font-size="16px" color="#0F172A">
+      Hello {{name}},
+    </mj-text>
+    <mj-text padding-top="15px" color="#475569">
+      {{message}}
+    </mj-text>
+
+    <mj-spacer height="25px" />
+    
+    <mj-text font-size="14px" color="#64748B">
+      If this was you, you can safely ignore this email. If you don't recognize this activity, please secure your account immediately.
+    </mj-text>
+    
+    <mj-spacer height="25px" />
+
+    <mj-button background-color="#0F172A" color="white" font-weight="600" border-radius="8px" href="{{actionUrl}}">
+      Secure My Account
+    </mj-button>
+  </mj-column>
+</mj-section>

@@ -1,0 +1,40 @@
+<!-- Partial for Welcome Email, injected into base.mjml {{{content}}} -->
+<mj-section background-color="#F8FAFC" padding="40px 30px" border-bottom="1px solid #E2E8F0">
+  <mj-column>
+    <mj-text font-size="24px" font-weight="800" color="#0F172A" align="center" letter-spacing="-0.5px">
+      Welcome to ClauseForge!
+    </mj-text>
+    <mj-text font-size="16px" color="#475569" align="center" padding-top="10px" line-height="24px">
+      The Enterprise AI platform for legal document analysis.
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section padding="40px 30px">
+  <mj-column>
+    <mj-text font-weight="600" font-size="18px" color="#0F172A">
+      Hi {{name}},
+    </mj-text>
+    <mj-text padding-top="15px" color="#475569" line-height="26px" font-size="16px">
+      We're thrilled to have you onboard! ClauseForge is built to help you analyze complex contracts with enterprise-grade AI in minutes, identifying hidden risks and extracting critical clauses with ease.
+    </mj-text>
+    
+    <mj-text padding-top="20px" color="#475569" line-height="26px" font-size="16px">
+      To get started, try uploading your first legal document to our AI analysis engine. You'll receive a detailed risk report and actionable insights right here in your inbox.
+    </mj-text>
+
+    <mj-spacer height="35px" />
+
+    <mj-button background-color="#2563EB" color="white" font-weight="600" font-size="16px" border-radius="8px" href="{{dashboardUrl}}" width="100%" inner-padding="16px 24px">
+      Access Your Dashboard
+    </mj-button>
+    
+    <mj-spacer height="30px" />
+    <mj-divider border-width="1px" border-color="#E2E8F0" />
+    <mj-spacer height="20px" />
+    
+    <mj-text font-size="14px" color="#64748B" line-height="22px">
+      If you need any help, our support team is always here for you. Just hit reply to this email.
+    </mj-text>
+  </mj-column>
+</mj-section>

@@ -43,6 +43,15 @@ export async function getDocument(id: string): Promise<Document | undefined> {
     return undefined; // mock disabled
 }
 
+export async function deleteDocument(id: string): Promise<void> {
+    try {
+        await api.delete(`/api/documents/${id}`);
+    } catch (error) {
+        console.error('Failed to delete document:', error);
+        throw new Error('Failed to delete document');
+    }
+}
+
 export async function uploadDocument(
     file: File,
     onProgress?: (percent: number) => void

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUploadUrl, registerDocument, getDocuments, getDocumentAnalysis, compareDocuments, explainClause, downloadDocumentReport, getDocumentReport, negotiateDocument, documentActionItems, getAllActionItems } = require('../controllers/documentController');
+const { getUploadUrl, registerDocument, getDocuments, getDocumentAnalysis, compareDocuments, explainClause, downloadDocumentReport, getDocumentReport, negotiateDocument, documentActionItems, getAllActionItems, deleteDocument } = require('../controllers/documentController');
 const { protect } = require('../middleware/auth');
 const { cache } = require('../middleware/cache');
 
@@ -15,5 +15,6 @@ router.post('/:id/report', protect, downloadDocumentReport);
 router.get('/:id/report', protect, getDocumentReport);
 router.get('/:id/negotiate', protect, negotiateDocument);
 router.get('/:id/actions', protect, documentActionItems);
+router.delete('/:id', protect, deleteDocument);
 
 module.exports = router;

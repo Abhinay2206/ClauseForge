@@ -1,0 +1,46 @@
+<mjml>
+  <mj-head>
+    <mj-title>{{subject}}</mj-title>
+    <mj-font name="Inter" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <mj-attributes>
+      <mj-all font-family="Inter, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="15px" color="#334155" line-height="24px" />
+      <mj-section background-color="#ffffff" padding="20px 0" />
+    </mj-attributes>
+    <mj-style>
+      .body-bg { background-color: #F8FAFC; }
+      .container { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border-radius: 12px; overflow: hidden; }
+      .footer-link { color: #64748b; text-decoration: underline; }
+    </mj-style>
+  </mj-head>
+  <mj-body css-class="body-bg">
+    <mj-wrapper padding="40px 20px">
+      <!-- Header -->
+      <mj-section background-color="transparent" padding="0 0 30px 0">
+        <mj-column>
+          <mj-text align="center" font-size="28px" font-weight="800" color="#1E293B" letter-spacing="-0.5px">
+            Clause<span style="color: #2563EB;">Forge</span>
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+      <!-- Main Content -->
+      <mj-wrapper css-class="container" padding="0" background-color="#ffffff">
+        {{{content}}}
+      </mj-wrapper>
+
+      <!-- Footer -->
+      <mj-section background-color="transparent" padding="30px 0 0 0">
+        <mj-column>
+          <mj-text align="center" font-size="12px" color="#64748B" line-height="18px">
+            You're receiving this email because of your ClauseForge notification preferences.<br/>
+            <a href="{{preferencesUrl}}" class="footer-link">Manage your email preferences</a>
+          </mj-text>
+          <mj-text align="center" font-size="12px" color="#94A3B8" padding-top="10px">
+            © {{year}} ClauseForge. All rights reserved.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

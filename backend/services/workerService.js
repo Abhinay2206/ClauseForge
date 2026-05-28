@@ -4,6 +4,7 @@ const { processDocumentForRAG } = require('./ragService');
 const { analyzeDocument } = require('./aiService');
 const { invalidateCache } = require('../middleware/cache');
 const { VirusDetectedError } = require('./virusScanner');
+const { enqueueEmail } = require('../queues/emailQueue');
 
 const connection = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -16,7 +17,7 @@ const initializeWorker = () => {
     console.log(`Worker picked up job ${job.id} for document ${documentId}`);
 
     try {
-      const document = await DocumentModel.findById(documentId);
+      const document = await DocumentModel.findById(documentId).populate('user');
       if (!document) throw new Error('Document not found');
 
       // 1. Update status to analyzing
@@ -51,7 +52,23 @@ const initializeWorker = () => {
         })),
       });
       
-      await invalidateCache(document.user);
+      await invalidateCache(document.user._id || document.user);
+      
+      // 5. Send Email Report
+      if (document.user && document.user.emailPreferences?.reports !== false) {
+        await enqueueEmail('report', document.user.email, 'Your ClauseForge Analysis is Ready', {
+          documentName: document.originalName,
+          summary: aiResults.summary || 'Your document analysis has been successfully generated.',
+          riskScore: aiResults.overall_risk_score,
+          clauseCount: aiResults.clauses.length,
+          criticalCount: aiResults.clauses.filter(c => c.risk_level === 'High' || c.risk_level === 'Critical').length,
+          riskColor: aiResults.overall_risk_score > 70 ? '#EF4444' : aiResults.overall_risk_score > 30 ? '#F59E0B' : '#10B981',
+          reportUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/reports/${documentId}`,
+          documentId,
+          userId: document.user._id
+        });
+      }
+
       console.log(`Job ${job.id} for document ${documentId} completed successfully.`);
     } catch (error) {
       console.error(`Job ${job.id} for document ${documentId} failed:`, error);
@@ -64,7 +81,10 @@ const initializeWorker = () => {
       
       throw error;
     }
-  }, { connection });
+  }, { 
+    connection,
+    lockDuration: 300000, // 5 minutes to prevent lock expiration during long AI analysis
+  });
 
   worker.on('completed', job => {
     console.log(`${job.id} has completed!`);

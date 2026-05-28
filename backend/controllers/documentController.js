@@ -441,6 +441,31 @@ const getAllActionItems = async (req, res) => {
   }
 };
 
+// @desc    Delete a document
+// @route   DELETE /api/documents/:id
+// @access  Private
+const deleteDocument = async (req, res) => {
+  try {
+    console.log(`[DeleteDocument] Hit route with id: ${req.params.id}, user: ${req.user._id}`);
+    const document = await Document.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    // Invalidate cache and log audit
+    await invalidateCache(req.user._id);
+    await logAudit(req.user._id, 'document_delete', 'Document', req, { documentId: req.params.id });
+
+    res.json({ message: 'Document removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUploadUrl,
   registerDocument,
@@ -452,5 +477,6 @@ module.exports = {
   getDocumentReport,
   negotiateDocument,
   documentActionItems,
-  getAllActionItems
+  getAllActionItems,
+  deleteDocument
 };

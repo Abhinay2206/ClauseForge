@@ -9,9 +9,11 @@ const authRoutes = require('./routes/authRoute');
 const documentRoutes = require('./routes/documentRoute');
 const chatRoutes = require('./routes/chatRoute');
 const adminRoutes = require('./routes/adminRoute');
+const emailRoutes = require('./routes/emailRoute');
 
-// Worker service
+// Worker services
 const { initializeWorker } = require('./services/workerService');
+require('./services/emailWorker');
 
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { blockIP } = require('./middleware/blockIP');
@@ -45,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/email', emailRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {

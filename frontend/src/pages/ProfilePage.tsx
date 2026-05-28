@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
 import {
     User as UserIcon,
     Mail,
@@ -19,6 +20,31 @@ import { cn } from '@/utils/helpers';
 export default function ProfilePage() {
     const { user, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState<'general' | 'security' | 'billing'>('general');
+    const [preferences, setPreferences] = useState({ marketing: true, reports: true, alerts: true });
+
+    useEffect(() => {
+        const fetchPreferences = async () => {
+            try {
+                const { data } = await api.get('/api/email/preferences');
+                setPreferences(data);
+            } catch (err) {
+                console.error('Failed to fetch preferences', err);
+            }
+        };
+        fetchPreferences();
+    }, []);
+
+    const handlePreferenceChange = async (key: keyof typeof preferences) => {
+        const newPrefs = { ...preferences, [key]: !preferences[key] };
+        setPreferences(newPrefs);
+        try {
+            await api.put('/api/email/preferences', newPrefs);
+        } catch (err) {
+            console.error('Failed to update preferences', err);
+            // Revert on failure
+            setPreferences(preferences);
+        }
+    };
 
     const initials = user?.name
         ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -156,17 +182,27 @@ export default function ProfilePage() {
                                             <span className="text-[13px] text-gray-500">Receive analysis completion alerts</span>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" className="sr-only peer" defaultChecked />
+                                            <input type="checkbox" className="sr-only peer" checked={preferences.reports} onChange={() => handlePreferenceChange('reports')} />
                                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         </label>
                                     </div>
                                     <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-gray-900">Weekly Reports</span>
-                                            <span className="text-[13px] text-gray-500">Summary of your workspace activity</span>
+                                            <span className="text-[14px] font-medium text-gray-900">Security Alerts</span>
+                                            <span className="text-[13px] text-gray-500">Receive alerts for suspicious logins</span>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" className="sr-only peer" />
+                                            <input type="checkbox" className="sr-only peer" checked={preferences.alerts} onChange={() => handlePreferenceChange('alerts')} />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
+                                        <div className="flex flex-col">
+                                            <span className="text-[14px] font-medium text-gray-900">Marketing & Newsletter</span>
+                                            <span className="text-[13px] text-gray-500">Platform updates and legal AI insights</span>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={preferences.marketing} onChange={() => handlePreferenceChange('marketing')} />
                                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         </label>
                                     </div>

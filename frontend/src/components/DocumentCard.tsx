@@ -1,5 +1,6 @@
-import { FileText, FileType2, ExternalLink, ShieldAlert, GitCompareArrows, Download, Clock, Calendar } from 'lucide-react';
+import { FileText, FileType2, ExternalLink, ShieldAlert, GitCompareArrows, Download, Clock, Calendar, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentStore } from '@/store/documentStore';
 import { cn } from '@/utils/helpers';
 import type { Document } from '@/types';
 
@@ -75,8 +76,20 @@ export default function DocumentCard({ document: doc, className }: DocumentCardP
             )}
         >
             {/* Card Header */}
-            <div className="p-5 flex-1">
-                <div className="flex items-start gap-3">
+            <div className="p-5 flex-1 relative">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this document?')) {
+                            useDocumentStore.getState().removeDocument(doc.id);
+                        }
+                    }}
+                    className="absolute top-4 right-4 p-1.5 rounded hover:bg-red-50 text-[#94A3B8] hover:text-red-500 transition-colors"
+                    title="Delete document"
+                >
+                    <Trash2 size={15} />
+                </button>
+                <div className="flex items-start gap-3 pr-8">
                     {/* Doc icon */}
                     <div className={cn(
                         'flex h-10 w-10 items-center justify-center rounded-xl shrink-0',

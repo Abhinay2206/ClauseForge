@@ -142,7 +142,7 @@ export default function AnalysisPage() {
     };
 
     const renderHighlightedText = () => {
-        if (!analysis || !analysis.clauses.length) {
+        if (!analysis || !analysis.clauses?.length) {
             return DOC_TEXT; // fallback
         }
         
@@ -155,7 +155,7 @@ export default function AnalysisPage() {
         const parts: { text: string; clause?: Clause }[] = [];
         
         // Sort clauses by start index
-        const sorted = [...analysis.clauses].sort((a, b) => a.startIndex - b.startIndex);
+        const sorted = [...(analysis.clauses || [])].sort((a, b) => a.startIndex - b.startIndex);
         
         sorted.forEach((clause) => {
             parts.push({ text: clause.text, clause });
@@ -272,7 +272,7 @@ export default function AnalysisPage() {
                                     </p>
                                 </div>
                                 <span className="cf-badge cf-badge-completed">
-                                    {analysis.clauses.length} clauses detected
+                                    {analysis.clauses?.length || 0} clauses detected
                                 </span>
                             </div>
                             <div className="p-4 text-[13px] leading-7 whitespace-pre-wrap text-[#334155] max-h-[600px] overflow-y-auto doc-scroll font-[system-ui] tracking-normal">
@@ -360,11 +360,11 @@ export default function AnalysisPage() {
                                 <div className="cf-section-header">
                                     <p className="cf-section-title">All Clauses</p>
                                     <span className="text-[11px] font-semibold bg-[#F1F5F9] text-[#64748B] px-2 py-0.5 rounded-full">
-                                        {analysis.clauses.length}
+                                        {analysis.clauses?.length || 0}
                                     </span>
                                 </div>
                                 <div className="divide-y divide-[#F1F5F9] max-h-72 overflow-y-auto doc-scroll">
-                                    {analysis.clauses.map((clause) => {
+                                    {(analysis.clauses || []).map((clause) => {
                                         const colors = getRiskColor(clause.riskLevel);
                                         const isActive = selectedClause?.id === clause.id;
                                         return (
