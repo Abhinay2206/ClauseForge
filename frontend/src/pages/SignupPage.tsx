@@ -97,10 +97,6 @@ export default function SignupPage() {
                             </div>
                         ))}
                     </div>
-
-                    <div className="mt-14 pt-8 border-t border-white/10">
-                        <p className="text-[12px] text-white/40">Trusted by 500+ law firms worldwide</p>
-                    </div>
                 </div>
             </div>
 

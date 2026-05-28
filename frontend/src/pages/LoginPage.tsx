@@ -102,22 +102,6 @@ export default function LoginPage() {
                             </div>
                         ))}
                     </div>
-
-                    {/* Social proof */}
-                    <div className="mt-14 pt-8 border-t border-white/10 grid grid-cols-3 gap-6 text-center">
-                        <div>
-                            <p className="text-[24px] font-bold">10K+</p>
-                            <p className="text-[12px] text-white/50 mt-0.5">Documents</p>
-                        </div>
-                        <div>
-                            <p className="text-[24px] font-bold">98%</p>
-                            <p className="text-[12px] text-white/50 mt-0.5">Accuracy</p>
-                        </div>
-                        <div>
-                            <p className="text-[24px] font-bold">500+</p>
-                            <p className="text-[12px] text-white/50 mt-0.5">Law Firms</p>
-                        </div>
-                    </div>
                 </div>
             </div>
 
