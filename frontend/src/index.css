@@ -1,0 +1,509 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   ClauseForge — Premium Legal-Tech Design System
+   Notion / Linear / Stripe quality SaaS theme
+   ============================================ */
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* ── Brand ── */
+  --color-accent-50:  #EFF6FF;
+  --color-accent-100: #DBEAFE;
+  --color-accent-200: #BFDBFE;
+  --color-accent-400: #60A5FA;
+  --color-accent-500: #3B82F6;
+  --color-accent-600: #2563EB;
+  --color-accent-700: #1D4ED8;
+  --color-accent-800: #1E40AF;
+
+  /* ── Slate scale (primary neutrals) ── */
+  --color-slate-50:  #F8FAFC;
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
+
+  /* ── Page surfaces ── */
+  --color-page:    #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FAFBFC;
+
+  /* ── Text ── */
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-tertiary:  #94A3B8;
+  --color-text-disabled:  #CBD5E1;
+
+  /* ── Borders ── */
+  --color-border:        #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-border-focus:  #2563EB;
+
+  /* ── Risk colors ── */
+  --color-risk-high:        #DC2626;
+  --color-risk-high-bg:     #FEF2F2;
+  --color-risk-high-border: #FECACA;
+  --color-risk-high-text:   #991B1B;
+
+  --color-risk-medium:        #D97706;
+  --color-risk-medium-bg:     #FFFBEB;
+  --color-risk-medium-border: #FDE68A;
+  --color-risk-medium-text:   #92400E;
+
+  --color-risk-low:        #16A34A;
+  --color-risk-low-bg:     #F0FDF4;
+  --color-risk-low-border: #BBF7D0;
+  --color-risk-low-text:   #14532D;
+
+  /* ── Status colors ── */
+  --color-analyzing-bg:   #EFF6FF;
+  --color-analyzing-text: #1D4ED8;
+  --color-completed-bg:   #F0FDF4;
+  --color-completed-text: #15803D;
+  --color-error-bg:       #FEF2F2;
+  --color-error-text:     #DC2626;
+}
+
+/* ══════════════════════════════════════════
+   Base
+══════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--color-page);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════
+   Keyframes
+══════════════════════════════════════════ */
+
+/* Page entrance — slides up and fades in */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Score ring animation */
+@keyframes drawRing {
+  from { stroke-dashoffset: 327; }
+  to   { stroke-dashoffset: var(--ring-target); }
+}
+
+/* Spin */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Dot bounce (typing indicator) */
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-6px); }
+}
+
+/* Scale in for modals/dropdowns */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Pulse for analyzing status */
+@keyframes analysisPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ══════════════════════════════════════════
+   Animation utility classes
+══════════════════════════════════════════ */
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-spin-slow {
+  animation: spin 1.2s linear infinite;
+}
+
+.animate-analysis-pulse {
+  animation: analysisPulse 2s ease-in-out infinite;
+}
+
+/* Staggered children fade-in */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+
+/* ══════════════════════════════════════════
+   Card utilities
+══════════════════════════════════════════ */
+
+.cf-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.cf-card-hover:hover {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.06);
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.cf-card-selected {
+  border-color: var(--color-accent-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ══════════════════════════════════════════
+   Button primitives
+══════════════════════════════════════════ */
+
+.cf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0 14px;
+  height: 36px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease, opacity 0.15s;
+  user-select: none;
+}
+
+.cf-btn:active { transform: translateY(1px); }
+.cf-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.cf-btn-primary {
+  background-color: #2563EB;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.25);
+}
+.cf-btn-primary:hover:not(:disabled) {
+  background-color: #1D4ED8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.cf-btn-outline {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.cf-btn-outline:hover:not(:disabled) {
+  background-color: var(--color-slate-50);
+  border-color: #CBD5E1;
+  color: var(--color-text-primary);
+}
+
+.cf-btn-ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+.cf-btn-ghost:hover:not(:disabled) {
+  background-color: var(--color-slate-100);
+  color: var(--color-text-primary);
+}
+
+.cf-btn-danger {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+.cf-btn-danger:hover:not(:disabled) {
+  background-color: #FEE2E2;
+}
+
+.cf-btn-sm {
+  height: 30px;
+  font-size: 12px;
+  padding: 0 10px;
+  border-radius: 6px;
+}
+
+.cf-btn-lg {
+  height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 20px;
+  border-radius: 10px;
+}
+
+/* ══════════════════════════════════════════
+   Badge / Status chips
+══════════════════════════════════════════ */
+
+.cf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.01em;
+}
+
+.cf-badge-high {
+  background-color: var(--color-risk-high-bg);
+  color: var(--color-risk-high-text);
+  border: 1px solid var(--color-risk-high-border);
+}
+
+.cf-badge-medium {
+  background-color: var(--color-risk-medium-bg);
+  color: var(--color-risk-medium-text);
+  border: 1px solid var(--color-risk-medium-border);
+}
+
+.cf-badge-low {
+  background-color: var(--color-risk-low-bg);
+  color: var(--color-risk-low-text);
+  border: 1px solid var(--color-risk-low-border);
+}
+
+.cf-badge-analyzing {
+  background-color: var(--color-analyzing-bg);
+  color: var(--color-analyzing-text);
+  border: 1px solid #BFDBFE;
+}
+
+.cf-badge-completed {
+  background-color: var(--color-completed-bg);
+  color: var(--color-completed-text);
+  border: 1px solid var(--color-risk-low-border);
+}
+
+.cf-badge-error {
+  background-color: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-risk-high-border);
+}
+
+/* ══════════════════════════════════════════
+   Form inputs
+══════════════════════════════════════════ */
+
+.cf-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cf-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.cf-input:focus {
+  border-color: var(--color-accent-600);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* ══════════════════════════════════════════
+   Skeleton shimmer
+══════════════════════════════════════════ */
+
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E8EDF5 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* ══════════════════════════════════════════
+   Scrollbar
+══════════════════════════════════════════ */
+
+.chat-scroll::-webkit-scrollbar,
+.doc-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-track,
+.doc-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb,
+.doc-scroll::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════
+   Gradient text (branding accent)
+══════════════════════════════════════════ */
+
+.gradient-text {
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══════════════════════════════════════════
+   Section header pattern
+══════════════════════════════════════════ */
+
+.cf-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.cf-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* ══════════════════════════════════════════
+   Document type icon colors
+══════════════════════════════════════════ */
+
+.doc-icon-pdf  { color: #DC2626; background: #FEF2F2; }
+.doc-icon-docx { color: #2563EB; background: #EFF6FF; }
+.doc-icon-txt  { color: #475569; background: #F1F5F9; }
+
+/* ══════════════════════════════════════════
+   Divider
+══════════════════════════════════════════ */
+
+.cf-divider {
+  height: 1px;
+  background-color: var(--color-border-subtle);
+  margin: 0;
+  border: none;
+}
+
+/* ══════════════════════════════════════════
+   Page wrapper
+══════════════════════════════════════════ */
+
+.cf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 32px;
+  animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ══════════════════════════════════════════
+   Dropdown menu
+══════════════════════════════════════════ */
+
+.cf-dropdown {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.1), 0 2px 8px rgba(15, 23, 42, 0.06);
+  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   Markdown formatting (Chat)
+══════════════════════════════════════════ */
+.markdown-body p { margin-bottom: 0.75em; }
+.markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; }
+.markdown-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; }
+.markdown-body li { margin-bottom: 0.25em; }
+.markdown-body strong { font-weight: 600; color: #0F172A; }
+.markdown-body code { 
+  background-color: #E2E8F0; 
+  padding: 0.15em 0.3em; 
+  border-radius: 4px; 
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+}
+.markdown-body pre {
+  background-color: #0F172A;
+  color: #F8FAFC;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 0.75em;
+}
+.markdown-body pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+  font-weight: 600;
+  color: #0F172A;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+.markdown-body h3 { font-size: 1.1em; }
