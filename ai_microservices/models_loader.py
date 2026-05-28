@@ -22,6 +22,56 @@ def get_device():
         return "mps"
     return -1  # CPU
 
+def download_models_from_s3():
+    """
+    Downloads models from S3 if they don't exist locally.
+    Uses AWS credentials from the backend .env file.
+    """
+    import os
+    import boto3
+    from pathlib import Path
+    
+    # Simple check to see if models exist
+    if Path(settings.clause_model_dir).exists() and Path(settings.risk_model_dir).exists() and Path(settings.comparison_model_dir).exists():
+        if (Path(settings.clause_model_dir) / "config.json").exists():
+            print("Models found locally. Skipping S3 download.")
+            return
+
+    print("Models not found locally. Downloading from S3...")
+    
+    aws_access_key_id = settings.aws_access_key_id
+    aws_secret_access_key = settings.aws_secret_access_key
+    aws_region = settings.aws_region
+    bucket_name = settings.aws_s3_bucket_name
+    
+    if not all([aws_access_key_id, aws_secret_access_key, aws_region, bucket_name]):
+        print("Warning: Missing AWS credentials in config. Cannot download models from S3.")
+        return
+        
+    try:
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=aws_region
+        )
+        
+        paginator = s3.get_paginator('list_objects_v2')
+        print(f"Connecting to bucket {bucket_name} in {aws_region}...")
+        for page in paginator.paginate(Bucket=bucket_name, Prefix='models/'):
+            for obj in page.get('Contents', []):
+                key = obj['Key']
+                local_path = Path(".") / key
+                if key.endswith('/'):
+                    continue
+                local_path.parent.mkdir(parents=True, exist_ok=True)
+                # Only download if file doesn't exist
+                if not local_path.exists():
+                    print(f"  Downloading {key}...")
+                    s3.download_file(bucket_name, key, str(local_path))
+        print("S3 models download complete.")
+    except Exception as e:
+        print(f"Error downloading models from S3: {e}")
 
 def load_models():
     """
@@ -40,6 +90,9 @@ def load_models():
         similar, conflicting, unrelated
     """
     global clause_classifier, risk_classifier, comparison_classifier
+
+    # Download from S3 first
+    download_models_from_s3()
 
     device = get_device()
     device_name = "CUDA" if device == 0 else ("MPS" if device == "mps" else "CPU")

@@ -35,9 +35,16 @@ class Settings(BaseSettings):
     confidence_threshold: float = 0.3
     max_length: int = 256
 
+    # AWS S3 for Models
+    aws_region: str = ""
+    aws_s3_bucket_name: str = ""
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+
     class Config:
         env_file = Path(__file__).parent / ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
