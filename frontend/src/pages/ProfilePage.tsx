@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils/helpers';
 
-type ProfileTab = 'general' | 'security' | 'billing';
+type ProfileTab = 'general' | 'security';
 
 type PreferenceKey = 'marketing' | 'reports' | 'alerts';
 
@@ -27,7 +27,6 @@ type PreferenceState = Record<PreferenceKey, boolean>;
 const tabs: Array<{ id: ProfileTab; label: string; icon: typeof UserIcon }> = [
     { id: 'general', label: 'General', icon: UserIcon },
     { id: 'security', label: 'Security', icon: Shield },
-    { id: 'billing', label: 'Billing', icon: CreditCard },
 ];
 
 const preferenceRows: Array<{
@@ -35,22 +34,22 @@ const preferenceRows: Array<{
     title: string;
     description: string;
 }> = [
-    {
-        key: 'reports',
-        title: 'Analysis notifications',
-        description: 'Send an email when document analysis is complete.',
-    },
-    {
-        key: 'alerts',
-        title: 'Security alerts',
-        description: 'Notify me about unusual login or account activity.',
-    },
-    {
-        key: 'marketing',
-        title: 'Product updates',
-        description: 'Receive platform updates and legal AI insights.',
-    },
-];
+        {
+            key: 'reports',
+            title: 'Analysis notifications',
+            description: 'Send an email when document analysis is complete.',
+        },
+        {
+            key: 'alerts',
+            title: 'Security alerts',
+            description: 'Notify me about unusual login or account activity.',
+        },
+        {
+            key: 'marketing',
+            title: 'Product updates',
+            description: 'Receive platform updates and legal AI insights.',
+        },
+    ];
 
 function FieldDisplay({ label, value }: { label: string; value?: string }) {
     return (
@@ -112,8 +111,19 @@ function Panel({
 
 export default function ProfilePage() {
     const navigate = useNavigate();
-    const { user, logout } = useAuthStore();
+    const { user, logout, updateProfile } = useAuthStore();
     const [activeTab, setActiveTab] = useState<ProfileTab>('general');
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editForm, setEditForm] = useState({ name: user?.name || '', email: user?.email || '' });
+    const [editError, setEditError] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    
+    // Security states
+    const [passwordForm, setPasswordForm] = useState({ current: '', new: '' });
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+
     const [preferences, setPreferences] = useState<PreferenceState>({
         marketing: true,
         reports: true,
@@ -159,6 +169,37 @@ export default function ProfilePage() {
         ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
         : 'U';
 
+    const handleSaveProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEditError('');
+        setIsSaving(true);
+        try {
+            await updateProfile(editForm.name, editForm.email);
+            setIsEditingProfile(false);
+        } catch (error: any) {
+            setEditError(error.message);
+        }
+        setIsSaving(false);
+    };
+
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPasswordError('');
+        setPasswordSuccess('');
+        setIsChangingPassword(true);
+        try {
+            await api.put('/api/auth/password', { 
+                currentPassword: passwordForm.current, 
+                newPassword: passwordForm.new 
+            });
+            setPasswordSuccess('Password updated successfully');
+            setPasswordForm({ current: '', new: '' });
+        } catch (err: any) {
+            setPasswordError(err.response?.data?.message || 'Failed to update password');
+        }
+        setIsChangingPassword(false);
+    };
+
     return (
         <div className="cf-page">
             <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -182,7 +223,13 @@ export default function ProfilePage() {
                         <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">
                             {user?.role || 'user'}
                         </span>
-                        <button className="cf-btn cf-btn-outline">
+                        <button 
+                            className="cf-btn cf-btn-outline"
+                            onClick={() => {
+                                setEditForm({ name: user?.name || '', email: user?.email || '' });
+                                setIsEditingProfile(true);
+                            }}
+                        >
                             Edit Profile
                         </button>
                     </div>
@@ -250,27 +297,47 @@ export default function ProfilePage() {
             {activeTab === 'security' && (
                 <div className="grid gap-3 lg:grid-cols-[420px_1fr]">
                     <Panel title="Password" icon={Key}>
-                        <div className="space-y-3">
+                        <form onSubmit={handlePasswordChange} className="space-y-3">
+                            {passwordError && (
+                                <div className="rounded-md bg-red-50 p-2 text-[11px] font-medium text-red-700 border border-red-100">
+                                    {passwordError}
+                                </div>
+                            )}
+                            {passwordSuccess && (
+                                <div className="rounded-md bg-green-50 p-2 text-[11px] font-medium text-green-700 border border-green-100">
+                                    {passwordSuccess}
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-[11px] font-semibold text-slate-600 mb-1">Current password</label>
                                 <input
                                     type="password"
+                                    required
                                     placeholder="Enter current password"
                                     className="cf-input"
+                                    value={passwordForm.current}
+                                    onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })}
                                 />
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-slate-600 mb-1">New password</label>
                                 <input
                                     type="password"
+                                    required
                                     placeholder="Enter new password"
                                     className="cf-input"
+                                    value={passwordForm.new}
+                                    onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
                                 />
                             </div>
-                            <button className="cf-btn cf-btn-primary">
-                                Update Password
+                            <button 
+                                type="submit" 
+                                disabled={isChangingPassword}
+                                className="cf-btn cf-btn-primary"
+                            >
+                                {isChangingPassword ? 'Updating...' : 'Update Password'}
                             </button>
-                        </div>
+                        </form>
                     </Panel>
 
                     <Panel title="Active Sessions" icon={Activity}>
@@ -281,77 +348,84 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[12px] font-semibold text-slate-900">Current device</p>
-                                    <p className="mt-0.5 text-[11px] text-slate-500">Browser session currently in use</p>
+                                    <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
+                                        <Clock size={11} />
+                                        Last active: {user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'recently'}
+                                    </p>
+                                    {user?.lastIpAddress && (
+                                        <p className="mt-0.5 text-[10px] font-mono text-slate-400">
+                                            IP: {user.lastIpAddress}
+                                        </p>
+                                    )}
                                 </div>
                                 <span className="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 text-[10px] font-bold text-green-700">
                                     <CheckCircle2 size={11} />
                                     Active
                                 </span>
                             </div>
-
-                            <div className="flex items-center gap-3 pt-3">
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500">
-                                    <Globe size={15} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[12px] font-semibold text-slate-900">Recent web session</p>
-                                    <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
-                                        <Clock size={11} />
-                                        Last active 2 days ago
-                                    </p>
-                                </div>
-                                <button className="text-[11px] font-semibold text-slate-500 hover:text-red-600">
-                                    Revoke
-                                </button>
-                            </div>
                         </div>
                     </Panel>
                 </div>
             )}
 
-            {activeTab === 'billing' && (
-                <div className="grid gap-3 lg:grid-cols-[1fr_360px]">
-                    <Panel title="Current Plan" icon={CreditCard}>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <div className="mb-2 inline-flex items-center gap-1.5 rounded-md border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700">
-                                    <Shield size={11} />
-                                    Professional
-                                </div>
-                                <h2 className="text-[15px] font-bold text-slate-900">Pro Tier</h2>
-                                <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">
-                                    Advanced AI analysis, unlimited risk assessments, and priority support are enabled for this account.
-                                </p>
-                            </div>
-                            <button className="cf-btn cf-btn-primary">
-                                Manage Plan
+            {isEditingProfile && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
+                    <div className="w-full max-w-sm rounded-xl bg-white shadow-xl animate-scale-in overflow-hidden">
+                        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                            <h2 className="text-[15px] font-bold text-slate-900">Edit Profile</h2>
+                            <button 
+                                onClick={() => setIsEditingProfile(false)}
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
                             </button>
                         </div>
-                    </Panel>
-
-                    <Panel title="Usage" icon={Activity}>
-                        <div className="space-y-3">
-                            <div>
-                                <div className="mb-1.5 flex justify-between text-[11px] font-semibold text-slate-600">
-                                    <span>Documents analyzed</span>
-                                    <span>42</span>
+                        <form onSubmit={handleSaveProfile} className="p-5">
+                            {editError && (
+                                <div className="mb-4 rounded-md bg-red-50 p-2.5 text-[12px] font-medium text-red-700 border border-red-100">
+                                    {editError}
                                 </div>
-                                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                                    <div className="h-full w-[45%] rounded-full bg-blue-600" />
+                            )}
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="cf-input"
+                                        value={editForm.name}
+                                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="cf-input"
+                                        value={editForm.email}
+                                        onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    />
                                 </div>
                             </div>
-
-                            <div>
-                                <div className="mb-1.5 flex justify-between text-[11px] font-semibold text-slate-600">
-                                    <span>Storage</span>
-                                    <span>2.4 / 10 GB</span>
-                                </div>
-                                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                                    <div className="h-full w-[24%] rounded-full bg-slate-700" />
-                                </div>
+                            <div className="mt-6 flex justify-end gap-2">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsEditingProfile(false)}
+                                    className="cf-btn cf-btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={isSaving}
+                                    className="cf-btn cf-btn-primary"
+                                >
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                </button>
                             </div>
-                        </div>
-                    </Panel>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

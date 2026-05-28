@@ -8,6 +8,8 @@ export interface User {
     avatar?: string;
     role: 'user' | 'admin' | 'moderator' | 'support';
     status?: 'active' | 'suspended' | 'blocked';
+    lastLoginAt?: string;
+    lastIpAddress?: string;
 }
 
 export interface AuthState {

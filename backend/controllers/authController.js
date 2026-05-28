@@ -116,6 +116,8 @@ const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         status: user.status,
+        lastLoginAt: user.lastLoginAt,
+        lastIpAddress: user.lastIpAddress
       });
 
       // Audit Log
@@ -141,6 +143,72 @@ const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      if (req.body.email && req.body.email !== user.email) {
+        // Check if new email is already in use
+        const emailExists = await User.findOne({ email: req.body.email });
+        if (emailExists) {
+          return res.status(400).json({ message: 'Email is already in use' });
+        }
+        user.email = req.body.email;
+      }
+
+      const updatedUser = await user.save();
+      await logAudit(updatedUser._id, 'update_profile', 'UserAccount', req);
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        status: updatedUser.status,
+        lastLoginAt: updatedUser.lastLoginAt,
+        lastIpAddress: updatedUser.lastIpAddress
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Change user password
+// @route   PUT /api/auth/password
+// @access  Private
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Check if current password is correct
+    if (!(await user.matchPassword(currentPassword))) {
+      return res.status(401).json({ message: 'Incorrect current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    await logAudit(user._id, 'change_password', 'UserAccount', req);
+
+    res.json({ message: 'Password updated successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -245,6 +313,8 @@ const googleLogin = async (req, res) => {
       email: user.email,
       role: user.role,
       status: user.status,
+      lastLoginAt: user.lastLoginAt,
+      lastIpAddress: user.lastIpAddress
     });
   } catch (error) {
     console.error('Google login error:', error);
@@ -257,5 +327,7 @@ module.exports = {
   loginUser,
   logoutUser,
   getMe,
-  googleLogin
+  googleLogin,
+  updateProfile,
+  changePassword
 };
