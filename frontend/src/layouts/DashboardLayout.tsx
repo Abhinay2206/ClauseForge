@@ -63,8 +63,8 @@ function NavGroup({ label, items, onClick }: {
     onClick: () => void;
 }) {
     return (
-        <div className="mb-6">
-            <p className="px-4 mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+        <div className="mb-4">
+            <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                 {label}
             </p>
             <div className="space-y-1">
@@ -75,7 +75,7 @@ function NavGroup({ label, items, onClick }: {
                         onClick={onClick}
                         className={({ isActive }) =>
                             cn(
-                                'group flex items-center gap-3 rounded-md px-4 py-2.5 text-[13px] font-medium transition-all duration-200 relative mx-2',
+                                'group flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] font-medium transition-all duration-200 relative mx-2',
                                 isActive
                                     ? 'bg-blue-50 text-blue-600'
                                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -131,15 +131,13 @@ export default function DashboardLayout() {
             {/* ═══ Sidebar ═══ */}
             <aside
                 className={cn(
-                    'fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col bg-white border-r border-slate-200 transition-transform duration-300 lg:relative lg:translate-x-0',
+                    'fixed inset-y-0 left-0 z-50 flex w-[236px] flex-col bg-white border-r border-slate-200 transition-transform duration-300 lg:relative lg:translate-x-0',
                     mobileOpen ? 'translate-x-0' : '-translate-x-full'
                 )}
             >
                 {/* Logo */}
-                <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-100">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shrink-0 shadow-sm shadow-blue-600/30">
-                        <Scale size={16} strokeWidth={2.5} />
-                    </div>
+                <div className="flex h-14 items-center gap-2.5 px-4 border-b border-slate-100">
+                    <img src="/logo.png" alt="ClauseForge Logo" className="h-7 w-7 object-contain" />
                     <div className="flex-1 min-w-0">
                         <span className="text-[15px] font-bold tracking-tight text-slate-900">
                             ClauseForge
@@ -154,7 +152,7 @@ export default function DashboardLayout() {
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 overflow-y-auto py-6 chat-scroll">
+                <nav className="flex-1 overflow-y-auto py-4 chat-scroll">
                     <NavGroup
                         label="Workspace"
                         items={workspaceItems}
@@ -181,10 +179,10 @@ export default function DashboardLayout() {
                 )}
 
                 {/* Bottom User section */}
-                <div className="p-4 border-t border-slate-100">
+                <div className="p-3 border-t border-slate-100">
                     <button
                         onClick={() => navigate('/profile')}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50 transition-colors group text-left"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-slate-50 transition-colors group text-left"
                     >
                         {/* Avatar */}
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[12px] font-semibold text-slate-700 border border-slate-200 shrink-0">
@@ -216,7 +214,7 @@ export default function DashboardLayout() {
             {/* ═══ Main Content ═══ */}
             <div className="flex flex-1 flex-col min-w-0 bg-[#FAFAFA]">
                 {/* Top bar */}
-                <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 lg:px-8">
+                <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/80 backdrop-blur-md px-3 lg:px-4">
                     <button
                         onClick={() => setMobileOpen(true)}
                         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 transition-colors lg:hidden"
@@ -225,17 +223,17 @@ export default function DashboardLayout() {
                     </button>
 
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2.5 text-[14px]">
+                    <div className="flex items-center gap-2 text-[13px]">
                         <span className="hidden sm:inline text-slate-500 font-medium hover:text-slate-700 cursor-pointer transition-colors">{breadcrumbGroup}</span>
                         <ChevronRight size={14} className="hidden sm:inline text-slate-300" />
                         <span className="font-semibold text-slate-900">{pageTitle}</span>
                     </div>
 
-                    <div className="flex-1 flex justify-center px-4 hidden md:flex">
+                    <div className="flex-1 flex justify-center px-3 hidden md:flex">
                         {/* Command Bar / Search */}
                         <div 
                             onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-2 w-full max-w-md bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors text-slate-400 cursor-pointer"
+                            className="flex items-center gap-2 w-full max-w-sm bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-md px-3 py-1.5 transition-colors text-slate-400 cursor-pointer"
                         >
                             <Search size={15} />
                             <span className="text-[13px]">Search documents, clauses...</span>
@@ -248,8 +246,8 @@ export default function DashboardLayout() {
                     
                     <div className="flex-1 md:hidden" />
 
-                    <div className="flex items-center gap-3">
-                        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
+                    <div className="flex items-center gap-2">
+                        <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
                             <Bell size={18} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                         </button>
@@ -257,7 +255,7 @@ export default function DashboardLayout() {
                         {/* Desktop Upload Button */}
                         <NavLink
                             to="/upload"
-                            className="hidden sm:flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-4 py-2 rounded-lg shadow-sm shadow-blue-600/20 transition-all hover:shadow-md hover:-translate-y-px"
+                            className="hidden sm:flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[12px] font-medium px-3 py-1.5 rounded-md shadow-sm shadow-blue-600/20 transition-all hover:shadow-md hover:-translate-y-px"
                         >
                             <Plus size={16} />
                             New Document
@@ -303,8 +301,10 @@ export default function DashboardLayout() {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto doc-scroll p-4 lg:p-8">
-                    <Outlet />
+                <main className="cf-app-main flex-1 overflow-y-auto doc-scroll">
+                    <div className="cf-app-content">
+                        <Outlet />
+                    </div>
                 </main>
             </div>
             <GlobalSearch />

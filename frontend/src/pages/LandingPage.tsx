@@ -59,12 +59,7 @@ function Navbar() {
             <div className="max-w-[1200px] mx-auto px-4 h-[60px] flex items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2.5 select-none">
-                    <div className={cn(
-                        'h-8 w-8 rounded-[9px] flex items-center justify-center transition-all',
-                        scrolled ? 'bg-[#0F172A]' : 'bg-white/[0.12] border border-white/20 backdrop-blur-sm'
-                    )}>
-                        <Scale size={14} className="text-white" strokeWidth={2.5} />
-                    </div>
+                    <img src="/logo.png" alt="ClauseForge Logo" className="h-8 w-8 object-contain" />
                     <span className={cn(
                         'text-[15px] font-[750] tracking-[-0.02em] transition-colors',
                         scrolled ? 'text-[#0F172A]' : 'text-white'
@@ -211,9 +206,7 @@ function AppPreview() {
                     {/* Sidebar */}
                     <div className="w-[168px] border-r border-white/[0.05] flex flex-col p-3 shrink-0">
                         <div className="flex items-center gap-2 px-2 py-1.5 mb-4">
-                            <div className="h-5 w-5 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
-                                <Scale size={10} className="text-white" />
-                            </div>
+                            <img src="/logo.png" alt="ClauseForge Logo" className="h-5 w-5 object-contain" />
                             <span className="text-[11px] font-bold text-white/90 tracking-tight">ClauseForge</span>
                         </div>
                         <div className="space-y-0.5">

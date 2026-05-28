@@ -15,6 +15,25 @@ const SUGGESTIONS = [
     { icon: '🚫', text: 'Explain the non-compete clause' },
 ];
 
+const WORD_STREAM_INTERVAL_MS = 35;
+
+type ChatSessionSummary = {
+    _id: string;
+    documentIds?: string[];
+};
+
+type ChatSessionDetails = {
+    session: {
+        _id: string;
+    };
+    messages: Array<{
+        _id: string;
+        role: ChatMessage['role'];
+        content: string;
+        createdAt: string;
+    }>;
+};
+
 export default function ChatPage() {
     const { documents, fetchDocuments } = useDocumentStore();
     const [selectedDocId, setSelectedDocId] = useState<string>('');
@@ -24,8 +43,11 @@ export default function ChatPage() {
     const [isTyping, setIsTyping] = useState(false);
     const [chatPhase, setChatPhase] = useState<'searching' | 'analyzing' | 'generating'>('searching');
     const bottomRef = useRef<HTMLDivElement>(null);
-
-    const selectedDoc = documents.find((d) => d.id === selectedDocId);
+    const assistantContentRef = useRef('');
+    const pendingStreamTextRef = useRef('');
+    const wordQueueRef = useRef<string[]>([]);
+    const wordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const drainResolversRef = useRef<Array<() => void>>([]);
 
     useEffect(() => {
         fetchDocuments(true);
@@ -41,6 +63,106 @@ export default function ChatPage() {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
+    useEffect(() => {
+        return () => {
+            if (wordTimerRef.current) {
+                clearTimeout(wordTimerRef.current);
+            }
+        };
+    }, []);
+
+    const resolveWordDrainWaiters = () => {
+        if (
+            wordQueueRef.current.length > 0 ||
+            pendingStreamTextRef.current.length > 0 ||
+            wordTimerRef.current
+        ) {
+            return;
+        }
+
+        drainResolversRef.current.splice(0).forEach((resolve) => resolve());
+    };
+
+    const updateAssistantMessage = (assistantMsgId: string, content: string) => {
+        setMessages((prev) => prev.map(msg =>
+            msg.id === assistantMsgId ? { ...msg, content } : msg
+        ));
+    };
+
+    const revealNextQueuedWord = (assistantMsgId: string) => {
+        const nextWord = wordQueueRef.current.shift();
+
+        if (!nextWord) {
+            wordTimerRef.current = null;
+            resolveWordDrainWaiters();
+            return;
+        }
+
+        assistantContentRef.current += nextWord;
+        updateAssistantMessage(assistantMsgId, assistantContentRef.current);
+
+        wordTimerRef.current = setTimeout(() => {
+            revealNextQueuedWord(assistantMsgId);
+        }, WORD_STREAM_INTERVAL_MS);
+    };
+
+    const scheduleWordReveal = (assistantMsgId: string) => {
+        if (!wordTimerRef.current && wordQueueRef.current.length > 0) {
+            revealNextQueuedWord(assistantMsgId);
+        }
+    };
+
+    const enqueueAssistantText = (assistantMsgId: string, text: string, flush = false) => {
+        pendingStreamTextRef.current += text;
+
+        const source = pendingStreamTextRef.current;
+        const words: string[] = [];
+        const wordPattern = /\s*\S+\s*/g;
+        let consumed = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = wordPattern.exec(source)) !== null) {
+            const word = match[0];
+            const endsAtSourceEnd = wordPattern.lastIndex === source.length;
+            const mayBePartialWord = endsAtSourceEnd && !/\s$/.test(word);
+
+            if (mayBePartialWord && !flush) {
+                break;
+            }
+
+            words.push(word);
+            consumed = wordPattern.lastIndex;
+        }
+
+        if (flush && consumed < source.length) {
+            words.push(source.slice(consumed));
+            consumed = source.length;
+        }
+
+        pendingStreamTextRef.current = source.slice(consumed);
+
+        if (words.length > 0) {
+            wordQueueRef.current.push(...words);
+            scheduleWordReveal(assistantMsgId);
+        } else {
+            resolveWordDrainWaiters();
+        }
+    };
+
+    const waitForWordDrain = () => {
+        if (
+            wordQueueRef.current.length === 0 &&
+            pendingStreamTextRef.current.length === 0 &&
+            !wordTimerRef.current
+        ) {
+            return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+            drainResolversRef.current.push(resolve);
+        });
+    };
+
     // Fetch existing chat session for the selected document
     useEffect(() => {
         const loadSession = async () => {
@@ -52,19 +174,19 @@ export default function ChatPage() {
             
             try {
                 // 1. Fetch all sessions for this user
-                const { data: sessions } = await api.get('/api/chat/sessions');
+                const { data: sessions } = await api.get<ChatSessionSummary[]>('/api/chat/sessions');
                 
                 // 2. Find the most recent session for this document
-                const docSession = sessions.find((s: any) => 
+                const docSession = sessions.find((s) =>
                     s.documentIds && s.documentIds.includes(selectedDocId)
                 );
                 
                 if (docSession) {
                     // 3. Fetch full session details including messages
-                    const { data: sessionDetails } = await api.get(`/api/chat/sessions/${docSession._id}`);
+                    const { data: sessionDetails } = await api.get<ChatSessionDetails>(`/api/chat/sessions/${docSession._id}`);
                     
                     setSessionId(sessionDetails.session._id);
-                    setMessages(sessionDetails.messages.map((msg: any) => ({
+                    setMessages(sessionDetails.messages.map((msg) => ({
                         id: msg._id,
                         role: msg.role,
                         content: msg.content,
@@ -94,6 +216,14 @@ export default function ChatPage() {
         setInput('');
         setIsTyping(true);
         setChatPhase('searching');
+        assistantContentRef.current = '';
+        pendingStreamTextRef.current = '';
+        wordQueueRef.current = [];
+        drainResolversRef.current = [];
+        if (wordTimerRef.current) {
+            clearTimeout(wordTimerRef.current);
+            wordTimerRef.current = null;
+        }
         
         // Add a temporary empty assistant message that we will stream into
         const assistantMsgId = `msg-${Date.now() + 1}`;
@@ -125,9 +255,8 @@ export default function ChatPage() {
             const decoder = new TextDecoder();
             
             let done = false;
-            let currentAssistantContent = "";
-            let currentToolCall = "";
             let buffer = "";
+            let hasStartedAssistantContent = false;
             
             while (!done) {
                 const { value, done: readerDone } = await reader.read();
@@ -153,26 +282,30 @@ export default function ChatPage() {
                                     setSessionId(data.sessionId);
                                 } else if (data.type === 'tool_call') {
                                     setChatPhase('analyzing');
-                                    currentToolCall = `[Action: ${data.name} - searching for "${data.query}"]\n\n`;
-                                    setMessages((prev) => prev.map(msg => 
-                                        msg.id === assistantMsgId ? { ...msg, content: currentAssistantContent + currentToolCall } : msg
-                                    ));
+                                    assistantContentRef.current = `[Action: ${data.name} - searching for "${data.query}"]\n\n`;
+                                    pendingStreamTextRef.current = '';
+                                    wordQueueRef.current = [];
+                                    updateAssistantMessage(assistantMsgId, assistantContentRef.current);
                                 } else if (data.type === 'content') {
                                     setChatPhase('generating');
-                                    currentAssistantContent += data.content;
-                                    setMessages((prev) => prev.map(msg => 
-                                        msg.id === assistantMsgId ? { ...msg, content: currentAssistantContent } : msg
-                                    ));
+                                    if (!hasStartedAssistantContent) {
+                                        hasStartedAssistantContent = true;
+                                        assistantContentRef.current = '';
+                                        updateAssistantMessage(assistantMsgId, '');
+                                    }
+                                    enqueueAssistantText(assistantMsgId, data.content);
                                 } else if (data.type === 'error') {
                                     console.error('Chat stream error:', data.message);
                                 }
-                            } catch (e) {
+                            } catch {
                                 // ignore parse errors on invalid JSON
                             }
                         }
                     }
                 }
             }
+            enqueueAssistantText(assistantMsgId, '', true);
+            await waitForWordDrain();
         } catch (error) {
             console.error('Chat error:', error);
             setMessages((prev) => [...prev, {

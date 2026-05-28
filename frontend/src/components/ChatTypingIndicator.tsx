@@ -1,5 +1,4 @@
-import { Loader2, Sparkles, Search, Database } from 'lucide-react';
-import { cn } from '@/utils/helpers';
+import { Sparkles, Search, Database } from 'lucide-react';
 
 interface ChatTypingIndicatorProps {
     phase?: 'searching' | 'analyzing' | 'generating';

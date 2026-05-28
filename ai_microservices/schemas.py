@@ -107,3 +107,21 @@ class ActionItemsRequest(BaseModel):
 class ActionItemsResponse(BaseModel):
     """Response containing actionable items."""
     items: list[ActionItem] = Field(default_factory=list)
+
+class SupportCategorizeRequest(BaseModel):
+    """Request body for support ticket triage."""
+    description: str = Field(..., description="Support ticket description")
+
+class SupportCategorizeResponse(BaseModel):
+    """Support ticket triage response."""
+    category: str = Field(..., description="Ticket category")
+    priority: str = Field(..., description="Ticket priority")
+    aiSummary: str = Field(..., description="LLaMA-generated support summary")
+
+class SupportDraftRequest(BaseModel):
+    """Request body for drafting a support reply."""
+    history: str = Field(..., description="Ticket conversation history")
+
+class SupportDraftResponse(BaseModel):
+    """Support reply draft response."""
+    draft: str = Field(..., description="LLaMA-generated reply draft")

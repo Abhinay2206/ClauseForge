@@ -79,9 +79,7 @@ export default function LoginPage() {
                 <div className="relative text-white max-w-sm w-full">
                     {/* Logo */}
                     <div className="flex items-center gap-3 mb-12">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
-                            <Scale size={20} />
-                        </div>
+                        <img src="/logo.png" alt="ClauseForge Logo" className="h-10 w-10 object-contain" />
                         <span className="text-[18px] font-bold tracking-tight">ClauseForge</span>
                     </div>
 
@@ -128,9 +126,7 @@ export default function LoginPage() {
                 <div className="w-full max-w-[400px]">
                     {/* Mobile logo */}
                     <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F172A] text-white">
-                            <Scale size={18} />
-                        </div>
+                        <img src="/logo.png" alt="ClauseForge Logo" className="h-9 w-9 object-contain" />
                         <span className="text-[16px] font-bold tracking-tight text-[#0F172A]">ClauseForge</span>
                     </div>
 

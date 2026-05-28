@@ -14,33 +14,31 @@
     </mj-style>
   </mj-head>
   <mj-body css-class="body-bg">
-    <mj-wrapper padding="40px 20px">
-      <!-- Header -->
-      <mj-section background-color="transparent" padding="0 0 30px 0">
-        <mj-column>
-          <mj-text align="center" font-size="28px" font-weight="800" color="#1E293B" letter-spacing="-0.5px">
-            Clause<span style="color: #2563EB;">Forge</span>
-          </mj-text>
-        </mj-column>
-      </mj-section>
+    <!-- Header -->
+    <mj-section background-color="transparent" padding="40px 20px 30px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="28px" font-weight="800" color="#1E293B" letter-spacing="-0.5px">
+          Clause<span style="color: #2563EB;">Forge</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-      <!-- Main Content -->
-      <mj-wrapper css-class="container" padding="0" background-color="#ffffff">
-        {{{content}}}
-      </mj-wrapper>
-
-      <!-- Footer -->
-      <mj-section background-color="transparent" padding="30px 0 0 0">
-        <mj-column>
-          <mj-text align="center" font-size="12px" color="#64748B" line-height="18px">
-            You're receiving this email because of your ClauseForge notification preferences.<br/>
-            <a href="{{preferencesUrl}}" class="footer-link">Manage your email preferences</a>
-          </mj-text>
-          <mj-text align="center" font-size="12px" color="#94A3B8" padding-top="10px">
-            © {{year}} ClauseForge. All rights reserved.
-          </mj-text>
-        </mj-column>
-      </mj-section>
+    <!-- Main Content -->
+    <mj-wrapper css-class="container" padding="0 20px" background-color="#ffffff">
+      {{{content}}}
     </mj-wrapper>
+
+    <!-- Footer -->
+    <mj-section background-color="transparent" padding="30px 20px 40px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#64748B" line-height="18px">
+          You're receiving this email because of your ClauseForge notification preferences.<br/>
+          <a href="{{preferencesUrl}}" class="footer-link">Manage your email preferences</a>
+        </mj-text>
+        <mj-text align="center" font-size="12px" color="#94A3B8" padding-top="10px">
+          © {{year}} ClauseForge. All rights reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
   </mj-body>
 </mjml>

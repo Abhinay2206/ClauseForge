@@ -15,8 +15,9 @@ from config import settings
 from models_loader import load_models, get_clause_classifier, get_risk_classifier
 from chroma_client import init_chroma
 from analyzer import analyze_document, compare_documents, explain_clause_with_llm, explain_document_with_llm, generate_negotiation_suggestions, extract_action_items
-from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse, NegotiationRequest, NegotiationResponse, ActionItemsRequest, ActionItemsResponse
+from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse, NegotiationRequest, NegotiationResponse, ActionItemsRequest, ActionItemsResponse, SupportCategorizeRequest, SupportCategorizeResponse, SupportDraftRequest, SupportDraftResponse
 from chat_agent import chat_agent_instance
+from support_ai import categorize_support_ticket, draft_support_reply
 
 
 # ──────────────────────────────────────────────────────────
@@ -194,6 +195,34 @@ async def action_items(request: ActionItemsRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Action items failed: {str(e)}"
+        )
+
+
+@app.post("/api/support/categorize", response_model=SupportCategorizeResponse)
+async def support_categorize(request: SupportCategorizeRequest):
+    """Categorize and summarize a support ticket using LLaMA."""
+    try:
+        result = categorize_support_ticket(request.description)
+        return SupportCategorizeResponse(**result)
+    except Exception as e:
+        print(f"Support categorization error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Support categorization failed: {str(e)}"
+        )
+
+
+@app.post("/api/support/draft", response_model=SupportDraftResponse)
+async def support_draft(request: SupportDraftRequest):
+    """Draft a support reply using LLaMA."""
+    try:
+        draft = draft_support_reply(request.history)
+        return SupportDraftResponse(draft=draft)
+    except Exception as e:
+        print(f"Support draft error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Support draft failed: {str(e)}"
         )
 
 
