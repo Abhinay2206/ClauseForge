@@ -1,4 +1,4 @@
-const { Worker } = require('bullmq');
+const { Worker, UnrecoverableError } = require('bullmq');
 const DocumentModel = require('../models/Document');
 const { processDocumentForRAG } = require('./ragService');
 const { analyzeDocument } = require('./aiService');
@@ -56,10 +56,12 @@ const initializeWorker = () => {
     } catch (error) {
       console.error(`Job ${job.id} for document ${documentId} failed:`, error);
       
-      // Update status to failed or failed_virus
-      const statusToSet = error instanceof VirusDetectedError ? 'failed_virus' : 'failed';
-      const failedDoc = await DocumentModel.findByIdAndUpdate(documentId, { status: statusToSet });
-      if (failedDoc) await invalidateCache(failedDoc.user);
+      if (error instanceof VirusDetectedError) {
+        const failedDoc = await DocumentModel.findByIdAndUpdate(documentId, { status: 'failed_virus' });
+        if (failedDoc) await invalidateCache(failedDoc.user);
+        throw new UnrecoverableError(error.message);
+      }
+      
       throw error;
     }
   }, { connection });
@@ -68,8 +70,28 @@ const initializeWorker = () => {
     console.log(`${job.id} has completed!`);
   });
 
-  worker.on('failed', (job, err) => {
-    console.log(`${job.id} has failed with ${err.message}`);
+  worker.on('failed', async (job, err) => {
+    console.log(`${job.id} has failed with ${err.message}. Attempt ${job.attemptsMade} of ${job.opts.attempts}`);
+    if (job.attemptsMade >= job.opts.attempts || err.name === 'UnrecoverableError') {
+      console.log(`Job ${job.id} has exhausted retries or is unrecoverable. Moving to DLQ.`);
+      try {
+        const { documentDLQ } = require('../queues/documentQueue');
+        await documentDLQ.add('dlq-job', {
+          originalJobId: job.id,
+          documentId: job.data?.documentId,
+          error: err.message,
+          failedAt: new Date(),
+          originalData: job.data
+        });
+        
+        if (err.name !== 'UnrecoverableError' && job.data?.documentId) {
+          const failedDoc = await DocumentModel.findByIdAndUpdate(job.data.documentId, { status: 'failed_dlq' });
+          if (failedDoc) await invalidateCache(failedDoc.user);
+        }
+      } catch (dlqErr) {
+        console.error(`Failed to move job ${job.id} to DLQ:`, dlqErr);
+      }
+    }
   });
 
   console.log('BullMQ DocumentProcessing worker initialized.');

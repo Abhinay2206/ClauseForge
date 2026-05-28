@@ -6,14 +6,15 @@ const connection = {
 };
 
 const documentQueue = new Queue('DocumentProcessing', { connection });
+const documentDLQ = new Queue('DocumentDLQ', { connection });
 
 const enqueueDocumentProcessing = async (documentId) => {
   try {
     const job = await documentQueue.add('process-document', { documentId }, {
-      attempts: 3,
+      attempts: 5,
       backoff: {
         type: 'exponential',
-        delay: 1000
+        delay: 2000
       }
     });
     console.log(`Enqueued job ${job.id} for document ${documentId}`);
@@ -26,5 +27,6 @@ const enqueueDocumentProcessing = async (documentId) => {
 
 module.exports = {
   documentQueue,
+  documentDLQ,
   enqueueDocumentProcessing
 };
