@@ -7,6 +7,7 @@ from groq import Groq
 from chroma_client import get_document_chunks
 from config import settings
 from rank_bm25 import BM25Okapi
+from models_loader import get_reranker_model
 
 class ChatAgent:
     def __init__(self):
@@ -40,16 +41,31 @@ class ChatAgent:
         tokenized_query = query.split(" ")
         doc_scores = bm25.get_scores(tokenized_query)
         
-        # Get top k
-        top_indices = sorted(range(len(doc_scores)), key=lambda i: doc_scores[i], reverse=True)[:top_k]
+        # Get top k * 4 for reranking
+        top_indices = sorted(range(len(doc_scores)), key=lambda i: doc_scores[i], reverse=True)[:top_k * 4]
         
-        results = []
+        candidates = []
         for idx in top_indices:
             if doc_scores[idx] > 0: # Only return matches
-                results.append(all_chunks[idx]["text"])
+                candidates.append(all_chunks[idx]["text"])
                 
-        if not results:
+        if not candidates:
             return "No exact keyword matches found."
+            
+        try:
+            reranker = get_reranker_model()
+            pairs = [[query, text] for text in candidates]
+            scores = reranker.predict(pairs)
+            
+            # Sort candidates by reranker score
+            scored_candidates = list(zip(candidates, scores))
+            scored_candidates.sort(key=lambda x: x[1], reverse=True)
+            
+            # Take top_k
+            results = [cand for cand, score in scored_candidates[:top_k]]
+        except Exception as e:
+            print(f"Reranking failed in keyword search: {e}")
+            results = candidates[:top_k]
             
         return "\n\n".join(results)
         
@@ -69,14 +85,31 @@ class ChatAgent:
             
         results = _collection.query(
             query_texts=[query],
-            n_results=top_k,
+            n_results=top_k * 4,
             where=where_filter
         )
         
         if not results or not results["documents"] or not results["documents"][0]:
             return "No semantically relevant context found."
             
-        return "\n\n".join(results["documents"][0])
+        candidates = results["documents"][0]
+        
+        try:
+            reranker = get_reranker_model()
+            pairs = [[query, text] for text in candidates]
+            scores = reranker.predict(pairs)
+            
+            # Sort candidates by reranker score
+            scored_candidates = list(zip(candidates, scores))
+            scored_candidates.sort(key=lambda x: x[1], reverse=True)
+            
+            # Take top_k
+            final_results = [cand for cand, score in scored_candidates[:top_k]]
+        except Exception as e:
+            print(f"Reranking failed in semantic search: {e}")
+            final_results = candidates[:top_k]
+            
+        return "\n\n".join(final_results)
 
     def summarize_document(self, document_ids: List[str]) -> str:
         """Summarize tool."""

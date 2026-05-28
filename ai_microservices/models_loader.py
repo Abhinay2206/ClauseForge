@@ -5,6 +5,7 @@ Loads both models at startup using transformers pipeline and caches them in memo
 
 import torch
 from transformers import pipeline
+from sentence_transformers import CrossEncoder
 from config import settings
 
 
@@ -12,6 +13,7 @@ from config import settings
 clause_classifier = None
 risk_classifier = None
 comparison_classifier = None
+reranker_model = None
 
 
 def get_device():
@@ -88,8 +90,11 @@ def load_models():
 
     Comparison Model (3 classes):
         similar, conflicting, unrelated
+        
+    Reranker Model:
+        cross-encoder/ms-marco-MiniLM-L-6-v2
     """
-    global clause_classifier, risk_classifier, comparison_classifier
+    global clause_classifier, risk_classifier, comparison_classifier, reranker_model
 
     # Download from S3 first
     download_models_from_s3()
@@ -137,6 +142,11 @@ def load_models():
     )
     print(f"  ✓ Comparison model loaded — {len(comparison_classifier.model.config.id2label)} classes")
 
+    # 4. Reranker Model
+    print("Loading Reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2")
+    reranker_model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2', max_length=512, device=device_name.lower())
+    print("  ✓ Reranker model loaded")
+
     print("All models loaded successfully.\n")
 
 
@@ -159,3 +169,10 @@ def get_comparison_classifier():
     if comparison_classifier is None:
         raise RuntimeError("Comparison classifier not loaded. Call load_models() first.")
     return comparison_classifier
+
+
+def get_reranker_model():
+    """Get the loaded CrossEncoder reranker model."""
+    if reranker_model is None:
+        raise RuntimeError("Reranker model not loaded. Call load_models() first.")
+    return reranker_model
