@@ -17,7 +17,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **ClauseForge** is an advanced, AI-driven legal-tech platform designed to automate and augment contract analysis. By leveraging cutting-edge large language models (LLMs) and semantic search architectures, ClauseForge empowers legal professionals, compliance teams, and businesses to upload contracts and instantly receive comprehensive risk assessments, clause breakdowns, and conversational insights.
 
@@ -25,24 +25,24 @@ With a meticulously designed, Notion/Linear-inspired user interface, the platfor
 
 ---
 
-## ✨ Core Features
+## Core Features
 
-### 🔍 Automated Contract Analysis
+### Automated Contract Analysis
 Upload your legal documents (PDF, DOCX, TXT) and let ClauseForge's AI engine scan them. The system automatically identifies standard and non-standard clauses, extracts key entities, and flags anomalies.
 
-### 🛡️ Intelligent Risk Scoring
+### Intelligent Risk Scoring
 Every document undergoes a rigorous risk assessment. ClauseForge assigns a **High, Medium, or Low** risk level, alongside a granular Risk Score (out of 100). The AI surfaces the exact text segments causing the risk and explains *why* it is a liability in plain English.
 
-### 💬 Context-Aware AI Assistant
+### Context-Aware AI Assistant
 Talk to your contracts. The built-in AI Assistant allows you to ask direct, complex questions about specific documents. Utilizing semantic vector search, it distinguishes between "New Queries" (which require searching the document) and "Follow-up Queries" (which utilize conversational context), ensuring highly accurate and fluid interactions. Streaming responses deliver a ChatGPT-like experience.
 
-### ⚖️ Document Comparison
+### Document Comparison
 Upload multiple iterations of an agreement (e.g., MSA v1 vs. MSA v2). ClauseForge performs intelligent diffing to surface material changes, additions, and deletions, bypassing superficial formatting differences.
 
-### 📊 Automated PDF Reporting
+### Automated PDF Reporting
 Generate and export beautiful, professional-grade PDF reports of your risk analyses and clause breakdowns with a single click, ready to be shared with stakeholders or clients.
 
-### 🔐 Advanced Admin Console
+### Advanced Admin Console
 A robust role-based access control (RBAC) system featuring `User`, `Support`, `Moderator`, and `System Admin` roles. The Admin Portal provides full control over:
 - **User Management**: Monitor logins, suspend/block users, and manage access levels.
 - **Document Management**: Overview of system-wide storage, document status tracking, and direct administrative actions.
@@ -50,7 +50,7 @@ A robust role-based access control (RBAC) system featuring `User`, `Support`, `M
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 ClauseForge is built on a modern, decoupled microservices architecture to ensure scalability, rapid iteration, and specialized environments for AI processing.
 
@@ -76,7 +76,7 @@ ClauseForge is built on a modern, decoupled microservices architecture to ensure
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v18 or higher)
@@ -130,7 +130,7 @@ The frontend will be available at `http://localhost:5173`.
 
 ---
 
-## 🎨 UI/UX Philosophy
+## UI/UX Philosophy
 
 ClauseForge is built with a focus on "Premium Professionalism." We avoid generic templates in favor of tailored design tokens.
 - **Typography**: Crisp, highly readable sans-serif fonts optimized for dense data.
