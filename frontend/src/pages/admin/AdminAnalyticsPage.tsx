@@ -62,7 +62,7 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
     });
 
     return (
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
             <svg width="140" height="140" viewBox="0 0 140 140">
                 <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={strokeW} />
                 {arcs.map((arc, i) => (
@@ -195,7 +195,7 @@ export default function AdminAnalyticsPage() {
             </div>
 
             {/* Charts Row 1: Uploads + Logins */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {/* Uploads Chart */}
                 <div className="rounded-xl p-5 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
                     <div className="flex items-center justify-between mb-6">
@@ -242,7 +242,7 @@ export default function AdminAnalyticsPage() {
             </div>
 
             {/* Charts Row 2: Risk Donut + Clause Types + Top Users */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
                 {/* Risk Distribution */}
                 <div className="rounded-xl p-5 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
@@ -264,7 +264,7 @@ export default function AdminAnalyticsPage() {
                             ))}
                         </div>
                     ) : clauseTypes.length === 0 ? (
-                        <div className="text-center py-8 text-[#94A3B8]">
+                        <div className="text-center py-5 text-[#94A3B8]">
                             <p className="text-[12px] font-medium">No clause data yet</p>
                         </div>
                     ) : (
@@ -286,7 +286,7 @@ export default function AdminAnalyticsPage() {
                             ))}
                         </div>
                     ) : topUsers.length === 0 ? (
-                        <div className="text-center py-8 text-[#94A3B8]">
+                        <div className="text-center py-5 text-[#94A3B8]">
                             <p className="text-[12px] font-medium">No user data yet</p>
                         </div>
                     ) : (

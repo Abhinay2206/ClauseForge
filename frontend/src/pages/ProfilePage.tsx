@@ -37,7 +37,7 @@ export default function ProfilePage() {
                 {/* Background Pattern */}
                 <div className="absolute inset-0 h-32 bg-gradient-to-r from-blue-600 to-indigo-600" />
                 
-                <div className="relative pt-16 px-6 sm:px-10 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6">
+                <div className="relative pt-16 px-4 sm:px-10 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-4">
                     <div className="relative group">
                         <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-white p-1 shadow-md">
                             <div className="h-full w-full rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-3xl font-bold text-white tracking-wider">
@@ -68,7 +68,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-4">
                 {/* Sidebar Navigation */}
                 <div className="lg:w-64 shrink-0">
                     <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-3 sticky top-6">
@@ -110,12 +110,12 @@ export default function ProfilePage() {
                     {activeTab === 'general' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
                             {/* Personal Information */}
-                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-5">
                                 <h2 className="text-[16px] font-semibold text-gray-900 mb-6 flex items-center gap-2">
                                     <UserIcon size={18} className="text-blue-600" />
                                     Personal Information
                                 </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-[13px] font-medium text-gray-500">Full Name</label>
                                         <div className="px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-gray-900 font-medium">
@@ -144,7 +144,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Preferences */}
-                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-5">
                                 <h2 className="text-[16px] font-semibold text-gray-900 mb-6 flex items-center gap-2">
                                     <Bell size={18} className="text-blue-600" />
                                     Preferences
@@ -178,7 +178,7 @@ export default function ProfilePage() {
                     {activeTab === 'security' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
                             {/* Password Settings */}
-                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-5">
                                 <h2 className="text-[16px] font-semibold text-gray-900 mb-6 flex items-center gap-2">
                                     <Key size={18} className="text-blue-600" />
                                     Password
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Active Sessions */}
-                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-5">
                                 <h2 className="text-[16px] font-semibold text-gray-900 mb-6 flex items-center gap-2">
                                     <Activity size={18} className="text-blue-600" />
                                     Active Sessions
@@ -241,8 +241,8 @@ export default function ProfilePage() {
                     {activeTab === 'billing' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
                             {/* Current Plan */}
-                            <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-2xl shadow-lg p-6 sm:p-8 text-white relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4">
+                            <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-2xl shadow-lg p-4 sm:p-5 text-white relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-5 opacity-10 transform translate-x-4 -translate-y-4">
                                     <CreditCard size={120} />
                                 </div>
                                 <div className="relative z-10">
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Usage Stats */}
-                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-5">
                                 <h2 className="text-[16px] font-semibold text-gray-900 mb-6">Current Usage</h2>
                                 <div className="space-y-6">
                                     <div className="space-y-2">

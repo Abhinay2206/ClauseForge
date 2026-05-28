@@ -91,7 +91,7 @@ export default function ReportPage() {
                 </div>
             ) : isLoading ? (
                 <div className="space-y-4 mt-6">
-                    <div className="cf-card p-6"><LoadingSkeleton lines={15} /></div>
+                    <div className="cf-card p-4"><LoadingSkeleton lines={15} /></div>
                 </div>
             ) : report?.fullAiReport ? (
                 <div className="space-y-6 print:m-8" ref={reportRef}>
@@ -105,7 +105,7 @@ export default function ReportPage() {
                                 Generated {formatDate(report.generatedAt)}
                             </span>
                         </div>
-                        <div className="p-8">
+                        <div className="p-5">
                             <div className="mb-6 border-b border-gray-100 pb-4">
                                 <h1 className="text-2xl font-bold text-gray-900 mb-2">ClauseForge Analysis Report</h1>
                                 <p className="text-sm text-gray-500">Document: {report.documentName}</p>
@@ -142,19 +142,19 @@ export default function ReportPage() {
                                 <table className="w-full text-[13px]">
                                     <thead>
                                         <tr className="bg-[#F8FAFC] border-b border-[#F1F5F9]">
-                                            <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Clause Type</th>
-                                            <th className="px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Count</th>
-                                            <th className="px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#16A34A]">
+                                            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Clause Type</th>
+                                            <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Count</th>
+                                            <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#16A34A]">
                                                 <span className="flex items-center justify-center gap-1">
                                                     <CheckCircle2 size={12} /> Low
                                                 </span>
                                             </th>
-                                            <th className="px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#D97706]">
+                                            <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#D97706]">
                                                 <span className="flex items-center justify-center gap-1">
                                                     <ShieldAlert size={12} /> Medium
                                                 </span>
                                             </th>
-                                            <th className="px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#DC2626]">
+                                            <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[#DC2626]">
                                                 <span className="flex items-center justify-center gap-1">
                                                     <AlertTriangle size={12} /> High
                                                 </span>
@@ -170,25 +170,25 @@ export default function ReportPage() {
                                                     i % 2 === 0 ? '' : 'bg-[#FAFBFC]'
                                                 )}
                                             >
-                                                <td className="px-6 py-3.5 font-medium text-[#0F172A]">
+                                                <td className="px-4 py-3.5 font-medium text-[#0F172A]">
                                                     {formatClauseType(ca.type)}
                                                 </td>
-                                                <td className="px-6 py-3.5 text-center text-[#64748B]">{ca.count}</td>
-                                                <td className="px-6 py-3.5 text-center">
+                                                <td className="px-4 py-3.5 text-center text-[#64748B]">{ca.count}</td>
+                                                <td className="px-4 py-3.5 text-center">
                                                     {ca.riskBreakdown.low > 0 && (
                                                         <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#F0FDF4] text-[11px] font-bold text-[#16A34A]">
                                                             {ca.riskBreakdown.low}
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-3.5 text-center">
+                                                <td className="px-4 py-3.5 text-center">
                                                     {ca.riskBreakdown.medium > 0 && (
                                                         <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#FFFBEB] text-[11px] font-bold text-[#D97706]">
                                                             {ca.riskBreakdown.medium}
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-3.5 text-center">
+                                                <td className="px-4 py-3.5 text-center">
                                                     {ca.riskBreakdown.high > 0 && (
                                                         <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#FEF2F2] text-[11px] font-bold text-[#DC2626]">
                                                             {ca.riskBreakdown.high}
@@ -250,7 +250,7 @@ export default function ReportPage() {
                         <Sparkles size={24} className="text-blue-500" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No AI Report Generated</h3>
-                    <p className="text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
+                    <p className="text-sm text-gray-500 max-w-md mb-6 leading-relaxed">
                         Generate a comprehensive, easy-to-understand breakdown of the entire document's clauses and risks using our advanced LLM.
                     </p>
                     <button 

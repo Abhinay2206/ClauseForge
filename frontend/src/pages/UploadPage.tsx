@@ -72,7 +72,7 @@ export default function UploadPage() {
             </div>
 
             {/* Upload card */}
-            <div className="cf-card p-6 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
+            <div className="cf-card p-4 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
                 {liveUploadedDoc ? (
                     <div className="text-center py-10">
                         <div className="flex justify-center mb-5">
@@ -90,7 +90,7 @@ export default function UploadPage() {
                         <h3 className="text-[17px] font-bold text-[#0F172A] mb-2">
                             {isProcessing ? 'Processing Document...' : 'Analysis Complete!'}
                         </h3>
-                        <div className="h-6 mb-8 flex items-center justify-center">
+                        <div className="h-6 mb-6 flex items-center justify-center">
                             <p className="text-[13px] text-[#64748B] animate-fade-in key={processingMessage}">
                                 {isProcessing
                                     ? processingMessage

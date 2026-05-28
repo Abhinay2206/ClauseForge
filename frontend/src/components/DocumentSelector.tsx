@@ -225,7 +225,7 @@ export default function DocumentSelector({
                     {/* Document list */}
                     <div className="overflow-y-auto doc-scroll flex-1">
                         {filtered.length === 0 ? (
-                            <div className="px-4 py-6 text-center text-[12px] text-[#94A3B8]">
+                            <div className="px-4 py-4 text-center text-[12px] text-[#94A3B8]">
                                 No documents match "{query}"
                             </div>
                         ) : (

@@ -218,7 +218,7 @@ export default function AnalysisPage() {
             </div>
 
             {isLoading ? (
-                <div className="grid gap-6 lg:grid-cols-3">
+                <div className="grid gap-4 lg:grid-cols-3">
                     <div className="lg:col-span-2"><LoadingSkeleton lines={22} /></div>
                     <div className="space-y-4">
                         <LoadingSkeleton lines={8} />
@@ -275,7 +275,7 @@ export default function AnalysisPage() {
                                     {analysis.clauses.length} clauses detected
                                 </span>
                             </div>
-                            <div className="p-6 text-[13px] leading-7 whitespace-pre-wrap text-[#334155] max-h-[600px] overflow-y-auto doc-scroll font-[system-ui] tracking-normal">
+                            <div className="p-4 text-[13px] leading-7 whitespace-pre-wrap text-[#334155] max-h-[600px] overflow-y-auto doc-scroll font-[system-ui] tracking-normal">
                                 {renderHighlightedText()}
                             </div>
                         </div>
@@ -342,7 +342,7 @@ export default function AnalysisPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="cf-card p-6 text-center">
+                                <div className="cf-card p-4 text-center">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F1F5F9] mx-auto mb-3">
                                         <FileSearch size={22} className="text-[#CBD5E1]" />
                                     </div>

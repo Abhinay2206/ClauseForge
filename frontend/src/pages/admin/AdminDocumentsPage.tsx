@@ -189,7 +189,7 @@ export default function AdminDocumentsPage() {
             {/* Table */}
             <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-sm animate-fade-slide-up">
                 {/* Header */}
-                <div className="grid gap-4 px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl"
+                <div className="grid gap-4 px-4 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl"
                     style={{ gridTemplateColumns: '2.5fr 1.5fr 0.8fr 0.8fr 1fr 1fr 0.8fr 40px' }}>
                     <span>Document</span>
                     <span>Owner</span>
@@ -204,7 +204,7 @@ export default function AdminDocumentsPage() {
                 {/* Rows */}
                 {loading ? (
                     [...Array(8)].map((_, i) => (
-                        <div key={i} className="grid gap-4 px-6 py-4 items-center border-b border-[#F1F5F9] last:border-0"
+                        <div key={i} className="grid gap-4 px-4 py-4 items-center border-b border-[#F1F5F9] last:border-0"
                             style={{ gridTemplateColumns: '2.5fr 1.5fr 0.8fr 0.8fr 1fr 1fr 0.8fr 40px' }}>
                             {[...Array(7)].map((__, j) => (
                                 <div key={j} className="h-3 rounded skeleton bg-[#F1F5F9]" />
@@ -220,7 +220,7 @@ export default function AdminDocumentsPage() {
                     const ss = STATUS_STYLES[doc.status] || STATUS_STYLES.pending;
                     const rs = doc.riskLevel ? RISK_STYLES[doc.riskLevel] : null;
                     return (
-                        <div key={doc._id} className="grid gap-4 px-6 py-3.5 items-center hover:bg-[#F8FAFC] transition-colors border-b border-[#F1F5F9] last:border-0"
+                        <div key={doc._id} className="grid gap-4 px-4 py-3.5 items-center hover:bg-[#F8FAFC] transition-colors border-b border-[#F1F5F9] last:border-0"
                             style={{ gridTemplateColumns: '2.5fr 1.5fr 0.8fr 0.8fr 1fr 1fr 0.8fr 40px' }}>
                             {/* Name */}
                             <div className="flex items-center gap-2.5 min-w-0">
@@ -296,7 +296,7 @@ export default function AdminDocumentsPage() {
             {/* Delete Modal */}
             {deleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm">
-                    <div className="rounded-2xl p-6 w-full max-w-sm mx-4 bg-white border border-[#E2E8F0] shadow-2xl animate-scale-in">
+                    <div className="rounded-2xl p-4 w-full max-w-sm mx-4 bg-white border border-[#E2E8F0] shadow-2xl animate-scale-in">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full mb-4 bg-red-50">
                             <Trash2 size={20} className="text-red-600" />
                         </div>
@@ -322,7 +322,7 @@ export default function AdminDocumentsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm">
                     <div className="rounded-2xl w-full max-w-lg mx-4 bg-white border border-[#E2E8F0] shadow-2xl animate-scale-in flex flex-col overflow-hidden">
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#F1F5F9] bg-[#F8FAFC]">
+                        <div className="flex items-center justify-between px-4 py-4 border-b border-[#F1F5F9] bg-[#F8FAFC]">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#2563EB]">
                                     <FileText size={18} />
@@ -340,7 +340,7 @@ export default function AdminDocumentsPage() {
                         </div>
                         
                         {/* Content */}
-                        <div className="p-6 space-y-5">
+                        <div className="p-4 space-y-5">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 rounded-xl border border-[#F1F5F9] bg-[#F8FAFC]">
                                     <p className="text-[11px] font-medium text-[#64748B] mb-1">Owner</p>

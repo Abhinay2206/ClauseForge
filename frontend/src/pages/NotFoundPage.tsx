@@ -24,7 +24,7 @@ export default function NotFoundPage() {
         <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 font-sans selection:bg-blue-100 selection:text-blue-900">
             <div className="max-w-md w-full flex flex-col items-center text-center animate-fade-slide-up">
                 {/* 404 Illustration */}
-                <div className="relative mb-8">
+                <div className="relative mb-6">
                     <div className="h-28 w-28 rounded-[2rem] bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center shadow-sm border border-blue-100/50">
                         <FileQuestion size={48} className="text-blue-500/80" />
                     </div>
@@ -41,7 +41,7 @@ export default function NotFoundPage() {
                 </div>
 
                 {/* Text Content */}
-                <h1 className="text-[32px] font-bold tracking-tight text-slate-900 mb-3">
+                <h1 className="text-[24px] font-bold tracking-tight text-slate-900 mb-3">
                     Page not found
                 </h1>
                 <p className="text-[15px] text-slate-500 mb-10 leading-relaxed max-w-[280px]">
@@ -49,7 +49,7 @@ export default function NotFoundPage() {
                 </p>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4 px-6">
+                <div className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4 px-4">
                     <button
                         onClick={() => navigate(-1)}
                         className="cf-btn cf-btn-secondary flex-1 justify-center h-11 text-[14px]"

@@ -67,7 +67,7 @@ export default function NegotiationPage() {
             </div>
 
             {isLoading ? (
-                <div className="mt-8 flex flex-col items-center justify-center p-8 cf-card">
+                <div className="mt-6 flex flex-col items-center justify-center p-5 cf-card">
                     <Loader2 className="w-8 h-8 text-[#8B5CF6] animate-spin mb-4" />
                     <p className="text-[#475569] font-medium text-sm">Generating AI redline suggestions...</p>
                 </div>
@@ -115,7 +115,7 @@ export default function NegotiationPage() {
                     ))}
                 </div>
             ) : selectedDoc ? (
-                <div className="mt-8 text-center cf-card p-8">
+                <div className="mt-6 text-center cf-card p-5">
                     <CheckCircle className="w-12 h-12 text-[#10B981] mx-auto mb-4" />
                     <h3 className="text-[#0F172A] font-semibold text-[16px]">No major risks detected</h3>
                     <p className="text-[#64748B] text-[13px] mt-1">This document appears to be well-balanced. No critical negotiation suggestions generated.</p>

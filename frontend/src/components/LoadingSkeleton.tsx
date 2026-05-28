@@ -23,7 +23,7 @@ export default function LoadingSkeleton({
 
     if (variant === 'chart') {
         return (
-            <div className={cn('cf-card p-6', className)}>
+            <div className={cn('cf-card p-4', className)}>
                 <div className="skeleton h-4 w-32 rounded mb-2" />
                 <div className="skeleton h-3 w-20 rounded mb-6" />
                 <div className="skeleton h-52 w-full rounded-lg" />

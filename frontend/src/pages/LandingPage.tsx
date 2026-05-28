@@ -56,7 +56,7 @@ function Navbar() {
                     : 'bg-transparent'
             )}
         >
-            <div className="max-w-[1200px] mx-auto px-6 h-[60px] flex items-center justify-between">
+            <div className="max-w-[1200px] mx-auto px-4 h-[60px] flex items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2.5 select-none">
                     <div className={cn(
@@ -379,9 +379,9 @@ function Hero() {
                 }}
             />
 
-            <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 flex flex-col items-center text-center">
+            <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 flex flex-col items-center text-center">
                 {/* Pill badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.1] bg-white/[0.04] mb-8 animate-fade-slide-up">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.1] bg-white/[0.04] mb-6 animate-fade-slide-up">
                     <span className="h-[5px] w-[5px] rounded-full bg-blue-500 animate-analysis-pulse" />
                     <span className="text-[11.5px] font-medium text-white/55">AI-Powered Legal Document Intelligence</span>
                 </div>
@@ -421,7 +421,7 @@ function Hero() {
                         <Link
                             to="/dashboard"
                             id="hero-cta-primary"
-                            className="group h-11 px-6 flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[14px] font-semibold transition-all duration-150 shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_24px_rgba(59,130,246,0.25)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.6),0_8px_30px_rgba(59,130,246,0.35)]"
+                            className="group h-11 px-4 flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[14px] font-semibold transition-all duration-150 shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_24px_rgba(59,130,246,0.25)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.6),0_8px_30px_rgba(59,130,246,0.35)]"
                         >
                             Go to Dashboard
                             <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
@@ -430,7 +430,7 @@ function Hero() {
                         <Link
                             to="/signup"
                             id="hero-cta-primary"
-                            className="group h-11 px-6 flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[14px] font-semibold transition-all duration-150 shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_24px_rgba(59,130,246,0.25)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.6),0_8px_30px_rgba(59,130,246,0.35)]"
+                            className="group h-11 px-4 flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[14px] font-semibold transition-all duration-150 shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_24px_rgba(59,130,246,0.25)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.6),0_8px_30px_rgba(59,130,246,0.35)]"
                         >
                             Start analyzing free
                             <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
@@ -438,7 +438,7 @@ function Hero() {
                     )}
                     <a
                         href="#workflow"
-                        className="h-11 px-6 flex items-center gap-2.5 rounded-xl border border-white/[0.12] text-white/60 text-[14px] font-medium hover:border-white/25 hover:text-white/85 hover:bg-white/[0.04] transition-all duration-150"
+                        className="h-11 px-4 flex items-center gap-2.5 rounded-xl border border-white/[0.12] text-white/60 text-[14px] font-medium hover:border-white/25 hover:text-white/85 hover:bg-white/[0.04] transition-all duration-150"
                     >
                         <div className="h-5 w-5 rounded-full border border-white/[0.16] bg-white/[0.06] flex items-center justify-center">
                             <Play size={8} className="text-white ml-px" fill="currentColor" />
@@ -467,7 +467,7 @@ function Features() {
             <div
                 ref={ref}
                 className={cn(
-                    'max-w-[1200px] mx-auto px-6 transition-all duration-700',
+                    'max-w-[1200px] mx-auto px-4 transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -601,7 +601,7 @@ function Features() {
                         { icon: Database, bg: 'bg-slate-100', ic: 'text-slate-600', title: 'Secure Workspace', desc: 'AES-256 encryption. Your legal data never leaves your compliance perimeter.' },
                         { icon: TrendingUp, bg: 'bg-blue-50', ic: 'text-blue-600', title: 'AI Recommendations', desc: 'Actionable negotiation recommendations for every risky clause, grounded in legal precedent.' },
                     ].map(f => (
-                        <div key={f.title} className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all duration-200">
+                        <div key={f.title} className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all duration-200">
                             <div className={cn('h-8 w-8 rounded-xl flex items-center justify-center mb-4', f.bg)}>
                                 <f.icon size={16} className={f.ic} />
                             </div>
@@ -634,7 +634,7 @@ function Workflow() {
             <div
                 ref={ref}
                 className={cn(
-                    'max-w-[1200px] mx-auto px-6 transition-all duration-700',
+                    'max-w-[1200px] mx-auto px-4 transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -650,7 +650,7 @@ function Workflow() {
                     {/* Connector line */}
                     <div className="hidden lg:block absolute h-px bg-slate-200 left-[calc(10%+28px)] right-[calc(10%+28px)]" style={{ top: '28px' }} />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 relative z-10">
                         {steps.map((s, i) => (
                             <div key={s.n} className="flex flex-col items-center text-center">
                                 <div
@@ -702,7 +702,7 @@ function WhyUs() {
             <div
                 ref={ref}
                 className={cn(
-                    'relative z-10 max-w-[1200px] mx-auto px-6 transition-all duration-700',
+                    'relative z-10 max-w-[1200px] mx-auto px-4 transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -735,7 +735,7 @@ function WhyUs() {
                     {items.map(item => (
                         <div
                             key={item.title}
-                            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 hover:bg-white/[0.055] hover:border-white/[0.1] transition-all duration-200 group"
+                            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 hover:bg-white/[0.055] hover:border-white/[0.1] transition-all duration-200 group"
                         >
                             <div
                                 className="h-9 w-9 rounded-xl flex items-center justify-center mb-5"
@@ -773,7 +773,7 @@ function Security() {
             <div
                 ref={ref}
                 className={cn(
-                    'max-w-[1200px] mx-auto px-6 transition-all duration-700',
+                    'max-w-[1200px] mx-auto px-4 transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -781,10 +781,10 @@ function Security() {
                     {/* Left */}
                     <div className="lg:col-span-4 mb-14 lg:mb-0">
                         <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-blue-600 mb-3">Security</p>
-                        <h2 className="text-[32px] font-[800] tracking-[-0.03em] text-slate-900 leading-tight mb-4">
+                        <h2 className="text-[24px] font-[800] tracking-[-0.03em] text-slate-900 leading-tight mb-4">
                             Enterprise-grade<br />security by default.
                         </h2>
-                        <p className="text-[15px] text-slate-500 leading-relaxed mb-8">
+                        <p className="text-[15px] text-slate-500 leading-relaxed mb-6">
                             Every architectural decision in ClauseForge prioritizes the security and confidentiality of your legal documents.
                         </p>
                     </div>
@@ -847,7 +847,7 @@ function Testimonials() {
             <div
                 ref={ref}
                 className={cn(
-                    'max-w-[1200px] mx-auto px-6 transition-all duration-700',
+                    'max-w-[1200px] mx-auto px-4 transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -921,7 +921,7 @@ function FinalCTA() {
             <div
                 ref={ref}
                 className={cn(
-                    'relative z-10 max-w-[720px] mx-auto px-6 text-center transition-all duration-700',
+                    'relative z-10 max-w-[720px] mx-auto px-4 text-center transition-all duration-700',
                     visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 )}
             >
@@ -980,7 +980,7 @@ function Footer() {
 
     return (
         <footer className="bg-[#060C1A] border-t border-white/[0.06]">
-            <div className="max-w-[1200px] mx-auto px-6">
+            <div className="max-w-[1200px] mx-auto px-4">
                 <div className="py-16 grid grid-cols-2 lg:grid-cols-5 gap-10">
                     {/* Brand */}
                     <div className="col-span-2 lg:col-span-1">

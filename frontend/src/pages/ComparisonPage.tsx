@@ -262,8 +262,8 @@ export default function ComparisonPage() {
 
             {/* Slot workspace */}
             {!comparison && !isLoading && (
-                <div className="cf-card p-6 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
-                    <div className="flex flex-col lg:flex-row gap-6 items-start">
+                <div className="cf-card p-4 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
+                    <div className="flex flex-col lg:flex-row gap-4 items-start">
                         {/* Slot A */}
                         <DocumentSlot
                             id="slot-a"
@@ -277,7 +277,7 @@ export default function ComparisonPage() {
                         />
 
                         {/* Center divider */}
-                        <div className="flex lg:flex-col items-center justify-center gap-2 shrink-0 lg:mt-12">
+                        <div className="flex lg:flex-col items-center justify-center gap-2 shrink-0 lg:mt-8">
                             <div className="h-px lg:h-full lg:w-px w-full bg-[#E2E8F0]" />
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] shrink-0">
                                 <ArrowLeftRight size={16} className="text-[#94A3B8]" />

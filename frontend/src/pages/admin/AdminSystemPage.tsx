@@ -186,10 +186,10 @@ export default function AdminSystemPage() {
             )}
 
             {/* Server Info + Redis Stats */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
 
                 {/* Server Info */}
-                <div className="rounded-xl p-6 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
+                <div className="rounded-xl p-4 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
                     <div className="flex items-center gap-2 mb-6">
                         <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
                             <Server size={15} />
@@ -216,7 +216,7 @@ export default function AdminSystemPage() {
                 </div>
 
                 {/* Redis Stats */}
-                <div className="rounded-xl p-6 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
+                <div className="rounded-xl p-4 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
                     <div className="flex items-center gap-2 mb-6">
                         <div className="w-8 h-8 rounded-lg bg-[#ECFDF5] text-[#059669] flex items-center justify-center">
                             <Zap size={15} />
@@ -250,7 +250,7 @@ export default function AdminSystemPage() {
 
             {/* Memory Visualization */}
             {!loading && health && (
-                <div className="rounded-xl p-6 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
+                <div className="rounded-xl p-4 bg-white border border-[#E2E8F0] shadow-sm animate-fade-slide-up">
                     <div className="flex items-center gap-2 mb-6">
                         <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0] flex items-center justify-center">
                             <HardDrive size={15} />

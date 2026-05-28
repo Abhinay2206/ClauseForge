@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
             )}
 
             {/* Two-column section */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
                 {/* Recent Activity */}
                 <div className="xl:col-span-2 rounded-xl overflow-hidden bg-white border border-[#E2E8F0] animate-fade-slide-up">

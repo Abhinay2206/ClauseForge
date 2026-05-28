@@ -58,14 +58,14 @@ export default function SignupPage() {
                 <div className="absolute bottom-1/4 left-1/4 w-48 h-48 rounded-full bg-indigo-400/10 blur-3xl" />
 
                 <div className="relative text-white max-w-sm w-full">
-                    <div className="flex items-center gap-3 mb-12">
+                    <div className="flex items-center gap-3 mb-8">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
                             <Scale size={20} />
                         </div>
                         <span className="text-[18px] font-bold tracking-tight">ClauseForge</span>
                     </div>
 
-                    <h1 className="text-[32px] font-bold leading-tight tracking-tight mb-4">
+                    <h1 className="text-[24px] font-bold leading-tight tracking-tight mb-4">
                         Join thousands of legal professionals
                     </h1>
                     <p className="text-[15px] text-white/60 leading-relaxed mb-10">
@@ -90,10 +90,10 @@ export default function SignupPage() {
             </div>
 
             {/* ─── Right form panel ─── */}
-            <div className="flex flex-1 flex-col items-center justify-center p-8">
+            <div className="flex flex-1 flex-col items-center justify-center p-5">
                 <div className="w-full max-w-[400px]">
                     {/* Mobile logo */}
-                    <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+                    <div className="flex items-center gap-2.5 mb-6 lg:hidden">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F172A] text-white">
                             <Scale size={18} />
                         </div>
@@ -103,7 +103,7 @@ export default function SignupPage() {
                     <h2 className="text-[24px] font-bold tracking-tight text-[#0F172A]">Create your account</h2>
                     <p className="mt-2 text-[14px] text-[#64748B]">Get started with AI-powered legal analysis</p>
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                    <form onSubmit={handleSubmit} className="mt-6 space-y-5">
                         {error && (
                             <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 text-[13px] font-medium border border-red-100 animate-fade-in">
                                 <AlertCircle size={16} className="shrink-0" />
@@ -191,7 +191,7 @@ export default function SignupPage() {
                         </button>
                     </form>
 
-                    <p className="mt-8 text-center text-[13px] text-[#64748B]">
+                    <p className="mt-6 text-center text-[13px] text-[#64748B]">
                         Already have an account?{' '}
                         <Link to="/login" className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
                             Sign in

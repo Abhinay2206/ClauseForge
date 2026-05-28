@@ -79,7 +79,7 @@ function UserDrawer({ user, onClose, onStatusChange }: {
             <div className="flex-1 bg-[#0F172A]/40 backdrop-blur-sm" onClick={onClose} />
             <div className="w-full max-w-lg flex flex-col bg-white shadow-2xl animate-fade-slide-up border-l border-[#E2E8F0]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#F1F5F9]">
+                <div className="flex items-center justify-between px-4 py-4 border-b border-[#F1F5F9]">
                     <div className="flex items-center gap-3">
                         <Avatar name={user.name} size={36} />
                         <div>
@@ -93,7 +93,7 @@ function UserDrawer({ user, onClose, onStatusChange }: {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 px-6 py-3 border-b border-[#F1F5F9] bg-[#F8FAFC]">
+                <div className="flex gap-1 px-4 py-3 border-b border-[#F1F5F9] bg-[#F8FAFC]">
                     {(['overview', 'documents', 'logs'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={cn(
@@ -111,13 +111,13 @@ function UserDrawer({ user, onClose, onStatusChange }: {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto doc-scroll bg-[#F8FAFC]">
                     {loading ? (
-                        <div className="p-6 space-y-3">
+                        <div className="p-4 space-y-3">
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="h-12 rounded-xl skeleton bg-white border border-[#E2E8F0]" />
                             ))}
                         </div>
                     ) : activeTab === 'overview' ? (
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 space-y-6">
                             {/* Stats row */}
                             <div className="grid grid-cols-3 gap-3">
                                 {[
@@ -326,7 +326,7 @@ export default function AdminUsersPage() {
             <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-sm animate-fade-slide-up pb-1"
                 style={{ overflow: 'visible' }}> {/* Removed overflow-hidden to fix dropdown overlap */}
                 {/* Table Header */}
-                <div className="grid gap-4 px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl"
+                <div className="grid gap-4 px-4 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl"
                     style={{ gridTemplateColumns: '2fr 1.2fr 1fr 1fr 0.8fr 0.8fr 40px' }}>
                     <span>User</span>
                     <span>Email</span>
@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
                 {/* Rows */}
                 {loading ? (
                     [...Array(8)].map((_, i) => (
-                        <div key={i} className="grid gap-4 px-6 py-4 items-center border-b border-[#F1F5F9] last:border-0"
+                        <div key={i} className="grid gap-4 px-4 py-4 items-center border-b border-[#F1F5F9] last:border-0"
                             style={{ gridTemplateColumns: '2fr 1.2fr 1fr 1fr 0.8fr 0.8fr 40px' }}>
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full skeleton bg-[#F1F5F9]" />
@@ -362,7 +362,7 @@ export default function AdminUsersPage() {
                     return (
                         <div
                             key={u._id}
-                            className={cn("grid gap-4 px-6 py-3.5 items-center hover:bg-[#F8FAFC] transition-colors relative border-b border-[#F1F5F9] last:border-0",
+                            className={cn("grid gap-4 px-4 py-3.5 items-center hover:bg-[#F8FAFC] transition-colors relative border-b border-[#F1F5F9] last:border-0",
                                 actionMenuId === u._id ? "z-50" : "z-0")}
                             style={{ gridTemplateColumns: '2fr 1.2fr 1fr 1fr 0.8fr 0.8fr 40px' }}
                         >
@@ -463,7 +463,7 @@ export default function AdminUsersPage() {
             {/* Delete Confirm Modal */}
             {deleteConfirm && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm">
-                    <div className="rounded-2xl p-6 w-full max-w-sm mx-4 bg-white border border-[#E2E8F0] shadow-2xl animate-scale-in">
+                    <div className="rounded-2xl p-4 w-full max-w-sm mx-4 bg-white border border-[#E2E8F0] shadow-2xl animate-scale-in">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full mb-4 bg-red-50">
                             <Trash2 size={20} className="text-red-600" />
                         </div>

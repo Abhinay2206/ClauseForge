@@ -14,7 +14,7 @@ export default function GlobalLoader({ message = 'Loading...', fullScreen = true
                 fullScreen ? "fixed inset-0 min-h-screen" : "w-full h-full min-h-[300px] rounded-2xl"
             )}
         >
-            <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-4">
                 {/* Brand Logo with pulsing effect */}
                 <div className="relative">
                     <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 rounded-full animate-pulse-slow" />

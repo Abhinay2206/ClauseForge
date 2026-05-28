@@ -141,7 +141,7 @@ export default function RiskPage() {
 
             {isLoading ? (
                 <div className="space-y-4">
-                    <div className="cf-card p-8 flex gap-8 items-center">
+                    <div className="cf-card p-5 flex gap-5 items-center">
                         <div className="skeleton h-40 w-40 rounded-full shrink-0" />
                         <div className="flex-1">
                             <div className="skeleton h-6 w-48 mb-3" />
@@ -156,8 +156,8 @@ export default function RiskPage() {
             ) : analysis ? (
                 <>
                     {/* Score card */}
-                    <div className="cf-card p-8 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
-                        <div className="flex flex-col sm:flex-row items-center gap-8">
+                    <div className="cf-card p-5 animate-fade-slide-up" style={{ animationDelay: '60ms' }}>
+                        <div className="flex flex-col sm:flex-row items-center gap-5">
                             <RiskScoreRing score={analysis.overallRiskScore} level={analysis.riskLevel} />
                             <div className="flex-1 text-center sm:text-left">
                                 <div className="flex items-center gap-3 justify-center sm:justify-start mb-2">
@@ -213,7 +213,7 @@ export default function RiskPage() {
                                 {analysis.risks ? analysis.risks.length : 0} issues
                             </span>
                         </div>
-                        <div className="divide-y divide-[#F8FAFC] px-6 py-2 space-y-1">
+                        <div className="divide-y divide-[#F8FAFC] px-4 py-2 space-y-1">
                             {analysis.risks && analysis.risks.map((risk) => (
                                 <RiskItem key={risk.id} risk={risk} />
                             ))}

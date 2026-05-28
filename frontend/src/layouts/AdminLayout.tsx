@@ -118,7 +118,7 @@ export default function AdminLayout() {
                 )}
             >
                 {/* Logo */}
-                <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-100">
+                <div className="flex h-16 items-center gap-3 px-4 border-b border-slate-100">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600 text-white shrink-0 shadow-sm shadow-purple-600/30">
                         <Scale size={16} strokeWidth={2.5} />
                     </div>
@@ -139,10 +139,10 @@ export default function AdminLayout() {
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 overflow-y-auto py-6 chat-scroll">
+                <nav className="flex-1 overflow-y-auto py-4 chat-scroll">
                     {adminNavItems.map((group) => (
                         <div key={group.section} className="mb-6">
-                            <p className="px-6 mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                            <p className="px-4 mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                                 {group.section}
                             </p>
                             <div className="space-y-1">
@@ -224,7 +224,7 @@ export default function AdminLayout() {
             {/* ═══ Main Content ═══ */}
             <div className="flex flex-1 flex-col min-w-0 bg-[#FAFAFA]">
                 {/* Top bar */}
-                <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 lg:px-8">
+                <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 lg:px-5">
                     <button
                         onClick={() => setMobileOpen(true)}
                         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 transition-colors lg:hidden"
@@ -311,7 +311,7 @@ export default function AdminLayout() {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto doc-scroll p-4 lg:p-8">
+                <main className="flex-1 overflow-y-auto doc-scroll p-4 lg:p-5">
                     <Outlet />
                 </main>
             </div>
