@@ -137,6 +137,27 @@ export interface DashboardStats {
     clauseDistribution: { name: string; count: number }[];
 }
 
+// ──── Negotiation & Action Items ────
+export interface NegotiationSuggestion {
+    original_text: string;
+    suggested_text: string;
+    reasoning: string;
+}
+
+export interface NegotiationResult {
+    suggestions: NegotiationSuggestion[];
+}
+
+export interface ActionItem {
+    task: string;
+    deadline: string;
+    description: string;
+}
+
+export interface ActionItemsResult {
+    items: ActionItem[];
+}
+
 // ══════════════════════════════════════
 // ADMIN TYPES
 // ══════════════════════════════════════

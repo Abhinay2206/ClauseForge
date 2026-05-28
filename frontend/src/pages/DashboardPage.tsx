@@ -10,12 +10,15 @@ import {
     AlertTriangle,
     FileText,
     Sparkles,
+    CheckSquare,
+    Calendar,
 } from 'lucide-react';
 import DocumentCard from '@/components/DocumentCard';
 import { useAuthStore } from '@/store/authStore';
 import { useDocumentStore } from '@/store/documentStore';
+import { getAllActionItems } from '@/services/documentService';
 import { cn } from '@/utils/helpers';
-import type { Document } from '@/types';
+import type { Document, ActionItem } from '@/types';
 
 /* ─────────────────────────────────
    Empty state — no documents yet
@@ -95,6 +98,15 @@ function EmptyState() {
 function DocumentWorkspace({ documents }: { documents: Document[] }) {
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
+    const [actionItems, setActionItems] = useState<(ActionItem & { documentName: string, documentId: string })[]>([]);
+
+    useEffect(() => {
+        getAllActionItems().then(data => {
+            if (data && data.items) {
+                setActionItems(data.items.slice(0, 5));
+            }
+        });
+    }, []);
 
     const completed  = documents.filter((d) => d.status === 'completed');
     const analyzing  = documents.filter((d) => d.status === 'analyzing');
@@ -165,18 +177,62 @@ function DocumentWorkspace({ documents }: { documents: Document[] }) {
                 ))}
             </div>
 
-            {/* Document grid */}
-            <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-[14px] font-semibold text-[#0F172A]">
-                        Recent Documents
-                    </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
+                {/* Document grid */}
+                <div className="lg:col-span-2">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-[14px] font-semibold text-[#0F172A]">
+                            Recent Documents
+                        </h2>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 stagger">
+                        {documents.slice(0, 4).map((doc) => (
+                            <DocumentCard key={doc.id} document={doc} />
+                        ))}
+                    </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 stagger">
-                    {documents.map((doc) => (
-                        <DocumentCard key={doc.id} document={doc} />
-                    ))}
+                {/* Action Items */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-[14px] font-semibold text-[#0F172A] flex items-center gap-1.5">
+                            <CheckSquare size={16} className="text-blue-600" />
+                            Recent Action Items
+                        </h2>
+                        <button onClick={() => navigate('/actions')} className="text-[12px] font-medium text-blue-600 hover:text-blue-700">View All</button>
+                    </div>
+                    
+                    <div className="cf-card p-0 overflow-hidden border border-[#E2E8F0]">
+                        {actionItems.length > 0 ? (
+                            <div className="divide-y divide-[#E2E8F0]">
+                                {actionItems.map((item, i) => (
+                                    <div key={i} className="p-3 hover:bg-[#F8FAFC] transition-colors cursor-pointer" onClick={() => navigate('/actions')}>
+                                        <div className="flex items-start gap-2.5">
+                                            <div className="mt-0.5">
+                                                <div className="w-4 h-4 rounded border border-[#CBD5E1] flex items-center justify-center bg-white" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[12px] font-semibold text-[#0F172A] leading-tight mb-1 truncate">{item.task}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] text-[#64748B] truncate max-w-[120px]">{item.documentName}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-[#E2E8F0]" />
+                                                    <span className="flex items-center gap-1 text-[10px] font-medium text-[#D97706] bg-[#FFFBEB] px-1.5 py-0.5 rounded text-nowrap">
+                                                        <Calendar size={10} />
+                                                        {item.deadline}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-6 text-center">
+                                <p className="text-[12px] text-[#64748B]">No action items found.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

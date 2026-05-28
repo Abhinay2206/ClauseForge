@@ -94,6 +94,14 @@ const documentSchema = new mongoose.Schema({
   totalChunks: {
     type: Number,
     default: 0
+  },
+  negotiationSuggestions: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  actionItems: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   }
 }, { timestamps: true });
 

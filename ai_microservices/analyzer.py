@@ -417,3 +417,89 @@ def compare_documents(req: CompareRequest) -> CompareResponse:
         comparisons=comparisons,
         summary=summary
     )
+
+import json
+from schemas import NegotiationSuggestion, ActionItem
+
+def generate_negotiation_suggestions(clauses: list[DetectedClause]) -> list[NegotiationSuggestion]:
+    groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
+    
+    if not groq_client or not clauses:
+        return []
+        
+    clause_texts = []
+    for i, c in enumerate(clauses[:10]):
+        clause_texts.append(f"Clause {i+1} [{c.type}]: {c.text}")
+        
+    prompt = (
+        "You are an expert contract negotiator. Review the following clauses. "
+        "For each clause, provide a suggested redline edit to make it more balanced and fair. "
+        "Respond STRICTLY with a JSON object in this format:\n"
+        '{"suggestions": [{"original_text": "...", "suggested_text": "...", "reasoning": "..."}]}\n\n'
+        "Clauses:\n" + "\n".join(clause_texts)
+    )
+    
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            temperature=0.2,
+            max_tokens=2048,
+        )
+        content = chat_completion.choices[0].message.content.strip()
+        start = content.find("{")
+        end = content.rfind("}") + 1
+        if start >= 0 and end > 0:
+            data = json.loads(content[start:end])
+            results = []
+            for item in data.get("suggestions", []):
+                results.append(NegotiationSuggestion(
+                    original_text=item.get("original_text", ""),
+                    suggested_text=item.get("suggested_text", ""),
+                    reasoning=item.get("reasoning", "")
+                ))
+            return results
+    except Exception as e:
+        print(f"Error generating negotiation suggestions: {e}")
+    return []
+
+def extract_action_items(clauses: list[DetectedClause]) -> list[ActionItem]:
+    groq_client = Groq(api_key=settings.groq_api_key) if settings.groq_api_key else None
+    
+    if not groq_client or not clauses:
+        return []
+        
+    clause_texts = []
+    for i, c in enumerate(clauses[:20]):
+        clause_texts.append(f"- {c.text}")
+        
+    prompt = (
+        "You are a contract manager. Extract all actionable workflows, obligations, and deadlines from the following contract clauses. "
+        "Respond STRICTLY with a JSON object in this format:\n"
+        '{"items": [{"task": "...", "deadline": "...", "description": "..."}]}\n\n'
+        "Clauses:\n" + "\n".join(clause_texts)
+    )
+    
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            temperature=0.2,
+            max_tokens=2048,
+        )
+        content = chat_completion.choices[0].message.content.strip()
+        start = content.find("{")
+        end = content.rfind("}") + 1
+        if start >= 0 and end > 0:
+            data = json.loads(content[start:end])
+            results = []
+            for item in data.get("items", []):
+                results.append(ActionItem(
+                    task=item.get("task", ""),
+                    deadline=item.get("deadline", ""),
+                    description=item.get("description", "")
+                ))
+            return results
+    except Exception as e:
+        print(f"Error extracting action items: {e}")
+    return []

@@ -147,6 +147,36 @@ export async function generateDocumentReport(documentId: string): Promise<Report
     }
 }
 
+export async function getNegotiationSuggestions(documentId: string) {
+    try {
+        const { data } = await api.get(`/api/documents/${documentId}/negotiate`);
+        return data;
+    } catch (error) {
+        console.error('Failed to get negotiation suggestions:', error);
+        throw error;
+    }
+}
+
+export async function getActionItems(documentId: string) {
+    try {
+        const { data } = await api.get(`/api/documents/${documentId}/actions`);
+        return data;
+    } catch (error) {
+        console.error('Failed to get action items:', error);
+        throw error;
+    }
+}
+
+export async function getAllActionItems() {
+    try {
+        const { data } = await api.get(`/api/documents/all/actions`);
+        return data;
+    } catch (error) {
+        console.error('Failed to get all action items:', error);
+        return { items: [] };
+    }
+}
+
 export async function sendChatMessage(
     message: string,
     _documentId?: string

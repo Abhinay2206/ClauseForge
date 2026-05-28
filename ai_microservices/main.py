@@ -14,8 +14,8 @@ from sse_starlette.sse import EventSourceResponse
 from config import settings
 from models_loader import load_models, get_clause_classifier, get_risk_classifier
 from chroma_client import init_chroma
-from analyzer import analyze_document, compare_documents, explain_clause_with_llm, explain_document_with_llm
-from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse
+from analyzer import analyze_document, compare_documents, explain_clause_with_llm, explain_document_with_llm, generate_negotiation_suggestions, extract_action_items
+from schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse, CompareRequest, CompareResponse, ExplainClauseRequest, ExplainClauseResponse, ExplainDocumentRequest, ExplainDocumentResponse, NegotiationRequest, NegotiationResponse, ActionItemsRequest, ActionItemsResponse
 from chat_agent import chat_agent_instance
 
 
@@ -168,6 +168,32 @@ async def chat_stream(request: Request):
         raise HTTPException(
             status_code=500,
             detail=f"Chat stream failed: {str(e)}"
+        )
+
+@app.post("/api/negotiate", response_model=NegotiationResponse)
+async def negotiate(request: NegotiationRequest):
+    """Generate negotiation suggestions for clauses."""
+    try:
+        suggestions = generate_negotiation_suggestions(request.clauses)
+        return NegotiationResponse(suggestions=suggestions)
+    except Exception as e:
+        print(f"Negotiation error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Negotiation failed: {str(e)}"
+        )
+
+@app.post("/api/action_items", response_model=ActionItemsResponse)
+async def action_items(request: ActionItemsRequest):
+    """Extract action items from clauses."""
+    try:
+        items = extract_action_items(request.clauses)
+        return ActionItemsResponse(items=items)
+    except Exception as e:
+        print(f"Action items error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Action items failed: {str(e)}"
         )
 
 

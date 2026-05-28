@@ -16,7 +16,9 @@ import {
     ChevronRight,
     ShieldCheck,
     Search,
-    Bell
+    Bell,
+    PenTool,
+    CheckSquare
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -33,6 +35,8 @@ const toolItems = [
     { to: '/analysis', icon: FileSearch,       label: 'Analysis' },
     { to: '/risk',     icon: ShieldAlert,      label: 'Risk Analysis' },
     { to: '/compare',  icon: GitCompareArrows, label: 'Compare' },
+    { to: '/negotiation', icon: PenTool,       label: 'Negotiation' },
+    { to: '/actions',  icon: CheckSquare,      label: 'Action Items' },
     { to: '/chat',     icon: MessageSquare,    label: 'AI Assistant' },
     { to: '/report',   icon: FileText,         label: 'Reports' },
 ];
@@ -43,6 +47,8 @@ const PAGE_TITLES: Record<string, string> = {
     '/analysis':  'Analysis',
     '/risk':      'Risk Analysis',
     '/compare':   'Compare',
+    '/negotiation': 'Negotiation Suggestions',
+    '/actions':   'Action Items',
     '/chat':      'AI Assistant',
     '/report':    'Reports',
     '/profile':   'Profile',

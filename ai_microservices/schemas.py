@@ -79,3 +79,31 @@ class ExplainDocumentRequest(BaseModel):
 class ExplainDocumentResponse(BaseModel):
     """Response containing the full document AI report."""
     report: str = Field(..., description="Groq LLaMA generated comprehensive report")
+
+class NegotiationSuggestion(BaseModel):
+    """A suggested redline/edit for a clause."""
+    original_text: str = Field(..., description="The original text of the clause")
+    suggested_text: str = Field(..., description="The suggested revised text")
+    reasoning: str = Field(..., description="Explanation of why the change is beneficial")
+
+class NegotiationRequest(BaseModel):
+    """Request body for generating negotiation suggestions."""
+    clauses: list[DetectedClause] = Field(..., description="High/Medium risk clauses to negotiate")
+
+class NegotiationResponse(BaseModel):
+    """Response containing negotiation suggestions."""
+    suggestions: list[NegotiationSuggestion] = Field(default_factory=list)
+
+class ActionItem(BaseModel):
+    """An actionable workflow task extracted from a document."""
+    task: str = Field(..., description="The task to perform (e.g., 'Pay vendor')")
+    deadline: str = Field(..., description="The deadline or trigger (e.g., 'Within 15 days')")
+    description: str = Field(..., description="More context about the task")
+
+class ActionItemsRequest(BaseModel):
+    """Request body for generating action items."""
+    clauses: list[DetectedClause] = Field(..., description="All detected clauses in the document")
+
+class ActionItemsResponse(BaseModel):
+    """Response containing actionable items."""
+    items: list[ActionItem] = Field(default_factory=list)

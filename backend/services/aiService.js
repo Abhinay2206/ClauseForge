@@ -144,3 +144,53 @@ const explainDocumentAI = async (clauses, riskScore, riskLevel) => {
 };
 
 module.exports.explainDocumentAI = explainDocumentAI;
+
+/**
+ * Call the FastAPI AI microservice to generate negotiation suggestions.
+ * 
+ * @param {Array} clauses - Clauses to negotiate
+ * @returns {Object} Negotiation suggestions from FastAPI
+ */
+const getNegotiationSuggestionsAI = async (clauses) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/negotiate`, {
+      clauses,
+    }, {
+      timeout: 120000,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`AI negotiation failed: ${error.response.data.detail || error.response.statusText}`);
+    }
+    throw error;
+  }
+};
+
+module.exports.getNegotiationSuggestionsAI = getNegotiationSuggestionsAI;
+
+/**
+ * Call the FastAPI AI microservice to extract action items.
+ * 
+ * @param {Array} clauses - Clauses to extract from
+ * @returns {Object} Action items from FastAPI
+ */
+const getActionItemsAI = async (clauses) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/action_items`, {
+      clauses,
+    }, {
+      timeout: 120000,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`AI action items failed: ${error.response.data.detail || error.response.statusText}`);
+    }
+    throw error;
+  }
+};
+
+module.exports.getActionItemsAI = getActionItemsAI;

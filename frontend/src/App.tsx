@@ -19,6 +19,8 @@ const ChatPage = lazy(() => import('@/pages/ChatPage'));
 const ReportPage = lazy(() => import('@/pages/ReportPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const NegotiationPage = lazy(() => import('@/pages/NegotiationPage'));
+const ActionItemsPage = lazy(() => import('@/pages/ActionItemsPage'));
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -139,6 +141,8 @@ export default function App() {
             <Route path="/risk" element={<Suspense fallback={<GlobalLoader message="Loading risk assessment..." fullScreen={false} />}><RiskPage /></Suspense>} />
             <Route path="/compare" element={<Suspense fallback={<GlobalLoader message="Loading comparison tool..." fullScreen={false} />}><ComparisonPage /></Suspense>} />
             <Route path="/chat" element={<Suspense fallback={<GlobalLoader message="Loading AI assistant..." fullScreen={false} />}><ChatPage /></Suspense>} />
+            <Route path="/negotiation" element={<Suspense fallback={<GlobalLoader message="Loading negotiation..." fullScreen={false} />}><NegotiationPage /></Suspense>} />
+            <Route path="/actions" element={<Suspense fallback={<GlobalLoader message="Loading action items..." fullScreen={false} />}><ActionItemsPage /></Suspense>} />
             <Route path="/report" element={<Suspense fallback={<GlobalLoader message="Loading reports..." fullScreen={false} />}><ReportPage /></Suspense>} />
             <Route path="/profile" element={<Suspense fallback={<GlobalLoader message="Loading profile..." fullScreen={false} />}><ProfilePage /></Suspense>} />
           </Route>

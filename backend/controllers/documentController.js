@@ -320,6 +320,127 @@ const getDocumentReport = async (req, res) => {
   }
 };
 
+// @desc    Get negotiation suggestions
+// @route   GET /api/documents/:id/negotiate
+// @access  Private
+const negotiateDocument = async (req, res) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    if (document.status !== 'completed') {
+      return res.status(400).json({ message: 'Document analysis is not yet complete' });
+    }
+
+    if (document.negotiationSuggestions && Object.keys(document.negotiationSuggestions).length > 0) {
+      return res.json(document.negotiationSuggestions);
+    }
+
+    const { getNegotiationSuggestionsAI } = require('../services/aiService');
+    const aiResult = await getNegotiationSuggestionsAI(
+      document.clauses.map(c => ({
+        id: c.clauseId,
+        text: c.text,
+        type: c.type,
+        risk_level: c.riskLevel,
+        confidence: c.confidence,
+        risk_confidence: c.riskConfidence,
+        explanation: c.explanation,
+        start_index: c.startIndex,
+        end_index: c.endIndex,
+      }))
+    );
+
+    document.negotiationSuggestions = aiResult;
+    await document.save();
+
+    res.json(aiResult);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get action items
+// @route   GET /api/documents/:id/actions
+// @access  Private
+const documentActionItems = async (req, res) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    if (document.status !== 'completed') {
+      return res.status(400).json({ message: 'Document analysis is not yet complete' });
+    }
+
+    if (document.actionItems && Object.keys(document.actionItems).length > 0) {
+      return res.json(document.actionItems);
+    }
+
+    const { getActionItemsAI } = require('../services/aiService');
+    const aiResult = await getActionItemsAI(
+      document.clauses.map(c => ({
+        id: c.clauseId,
+        text: c.text,
+        type: c.type,
+        risk_level: c.riskLevel,
+        confidence: c.confidence,
+        risk_confidence: c.riskConfidence,
+        explanation: c.explanation,
+        start_index: c.startIndex,
+        end_index: c.endIndex,
+      }))
+    );
+
+    document.actionItems = aiResult;
+    await document.save();
+
+    res.json(aiResult);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all cached action items across documents
+// @route   GET /api/documents/all/actions
+// @access  Private
+const getAllActionItems = async (req, res) => {
+  try {
+    const documents = await Document.find({
+      user: req.user._id,
+      actionItems: { $exists: true, $ne: null }
+    }).select('name actionItems').sort({ createdAt: -1 });
+
+    const allItems = [];
+    documents.forEach(doc => {
+      if (doc.actionItems && doc.actionItems.items) {
+        doc.actionItems.items.forEach(item => {
+          allItems.push({
+            ...item,
+            documentId: doc._id,
+            documentName: doc.name
+          });
+        });
+      }
+    });
+
+    res.json({ items: allItems });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUploadUrl,
   registerDocument,
@@ -328,5 +449,8 @@ module.exports = {
   compareDocuments,
   explainClause,
   downloadDocumentReport,
-  getDocumentReport
+  getDocumentReport,
+  negotiateDocument,
+  documentActionItems,
+  getAllActionItems
 };
